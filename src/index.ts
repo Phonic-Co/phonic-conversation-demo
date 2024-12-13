@@ -32,7 +32,11 @@ Bun.serve<WebSocketData>({
           speaking: false,
           transcribe: () => {},
           promptLLM: () => {},
-          generateSpeech: () => {},
+          phonic: {
+            sendTextChunk: () => {},
+            sendFlush: () => {},
+            sendStop: () => {},
+          },
         },
       });
 

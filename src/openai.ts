@@ -29,23 +29,29 @@ export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
     ws.data.speaking = true;
 
     let fullMessage = "";
+    let interrupted = false;
 
     for await (const chunk of stream) {
       // If the user interrupted the AI speech, there is no point to continue collecting this text stream.
       if (!ws.data.speaking) {
+        interrupted = true;
         break;
       }
 
-      const chunkMessage = chunk.choices[0].delta.content;
+      const textChunk = chunk.choices[0].delta.content;
 
-      if (chunkMessage) {
-        fullMessage += chunkMessage;
+      if (textChunk) {
+        fullMessage += textChunk;
+        ws.data.phonic.sendTextChunk(textChunk);
       }
     }
 
-    console.log("OpenAI replied:", fullMessage);
+    ws.data.phonic.sendFlush();
 
-    ws.data.generateSpeech(fullMessage);
+    console.log(
+      `OpenAI message${interrupted ? " (interrupted by user)" : ""}:`,
+      fullMessage,
+    );
   };
 
   ws.data.promptLLM = promptLLM;

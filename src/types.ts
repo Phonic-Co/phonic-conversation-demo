@@ -3,7 +3,11 @@ export type WebSocketData = {
   speaking: boolean;
   transcribe: (audioinBase64: string) => void;
   promptLLM: (prompt: string) => Promise<void>;
-  generateSpeech: (script: string) => void;
+  phonic: {
+    sendTextChunk(text: string): void;
+    sendFlush(): void;
+    sendStop(): void;
+  };
 };
 
 export type TwilioWebSocketMessage =

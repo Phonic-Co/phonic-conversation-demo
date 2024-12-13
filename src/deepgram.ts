@@ -63,14 +63,14 @@ export const setupDeepgram = (ws: ServerWebSocket<WebSocketData>) => {
         }
       } else if (ws.data.speaking) {
         console.log("Sending clear message");
-        // Send "clear" message to Twilio
+
         ws.send(
           JSON.stringify({
             event: "clear",
             streamSid: ws.data.streamSid,
           }),
         );
-        // TODO: Send "clear" message to Phonic
+        ws.data.phonic.sendStop();
         ws.data.speaking = false;
       }
     });

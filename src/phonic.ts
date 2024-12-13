@@ -1,5 +1,4 @@
 import type { ServerWebSocket } from "bun";
-import { Phonic } from "phonic";
 import type { WebSocketData } from "./types";
 
 const phonicApiKey = Bun.env.PHONIC_API_KEY;
@@ -8,41 +7,64 @@ if (!phonicApiKey) {
   throw new Error("PHONIC_API_KEY environment variable is not set");
 }
 
-const phonic = new Phonic(phonicApiKey, {
-  baseUrl: Bun.env.PHONIC_API_BASE_URL || "https://api.phonic.co",
-});
+const baseUrl = Bun.env.PHONIC_API_BASE_URL || "https://api.phonic.co";
+const wsBaseUrl = baseUrl.replace(/^http/, "ws");
+const queryString = new URLSearchParams({
+  output_format: "mulaw_8000",
+}).toString();
+const webSocketUrl = `${wsBaseUrl}/v1/tts/ws?${queryString}`;
 
 export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
-  const { data, error } = await phonic.tts.websocket();
+  console.log("Connecting to Phonic WebSocket at", webSocketUrl);
 
-  if (error !== null) {
-    console.error("Phonic WebSocket error:", error);
-    return;
-  }
+  const phonicWebSocket = new WebSocket(webSocketUrl, {
+    // @ts-expect-error Looks like Bun types don't know yet about passing headers to WebSocket.
+    // It's clearly communicated here: https://bun.sh/docs/api/websockets#connect-to-a-websocket-server
+    headers: {
+      Authorization: `Bearer ${Bun.env.PHONIC_API_KEY}`,
+    },
+  });
 
-  const { phonicWebSocket } = data;
+  phonicWebSocket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
 
-  phonicWebSocket.onMessage((data) => {
-    if (data instanceof Buffer) {
-      // Send the generated speech to Twilio
+    if (message.type === "audio_chunk") {
       ws.send(
         JSON.stringify({
           event: "media",
           streamSid: ws.data.streamSid,
           media: {
-            payload: data.toString("base64"),
+            payload: message.audio,
           },
         }),
       );
+    } else if (message.type === "error") {
+      console.error("Phonic error:", message.error);
     }
-  });
-
-  const generateSpeech = (script: string) => {
-    phonicWebSocket.send({
-      script,
-      output_format: "mulaw_8000",
-    });
   };
 
-  ws.data.generateSpeech = generateSpeech;
+  ws.data.phonic = {
+    sendTextChunk(text: string) {
+      phonicWebSocket.send(
+        JSON.stringify({
+          type: "generate",
+          text,
+        }),
+      );
+    },
+    sendFlush() {
+      phonicWebSocket.send(
+        JSON.stringify({
+          type: "flush",
+        }),
+      );
+    },
+    sendStop() {
+      phonicWebSocket.send(
+        JSON.stringify({
+          type: "stop",
+        }),
+      );
+    },
+  };
 };
