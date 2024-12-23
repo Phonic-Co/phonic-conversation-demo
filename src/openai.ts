@@ -39,11 +39,11 @@ export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
         break;
       }
 
-      const textChunk = chunk.choices[0].delta.content;
+      const textChunk = chunk.choices[0]?.delta?.content || "";
 
       if (textChunk) {
         fullMessage += textChunk;
-        ws.data.phonic.sendText(textChunk);
+        ws.data.phonic.generate(textChunk);
       }
     }
 

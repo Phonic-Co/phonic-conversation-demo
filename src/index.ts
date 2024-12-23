@@ -33,9 +33,10 @@ Bun.serve<WebSocketData>({
           transcribe: () => {},
           promptLLM: () => {},
           phonic: {
-            sendTextChunk: () => {},
-            sendFlush: () => {},
-            sendStop: () => {},
+            generate: () => {},
+            flush: () => {},
+            stop: () => {},
+            close: () => {},
           },
         },
       });
@@ -77,8 +78,10 @@ Bun.serve<WebSocketData>({
         console.error("Failed to parse Twilio message:", error);
       }
     },
-    close() {
+    close(ws) {
       console.log("Twilio call finished");
+
+      ws.data.phonic.close();
     },
   },
 });

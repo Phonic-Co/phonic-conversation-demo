@@ -4,9 +4,10 @@ export type WebSocketData = {
   transcribe: (audioinBase64: string) => void;
   promptLLM: (prompt: string) => Promise<void>;
   phonic: {
-    sendText(text: string): void;
+    generate(text: string): void;
     flush(): void;
     stop(): void;
+    close(): void;
   };
 };
 
