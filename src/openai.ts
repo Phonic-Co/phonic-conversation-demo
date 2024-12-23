@@ -11,19 +11,20 @@ if (!openaiApiKey) {
 export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
   const openai = new OpenAI();
   const promptLLM = async (prompt: string) => {
-    const stream = openai.beta.chat.completions.stream({
-      model: "gpt-3.5-turbo",
-      stream: true,
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "assistant",
-          content: "You are funny, everything is a joke to you.",
+          content:
+            "You are friendly and very helpful, providing short and to the point answers.",
         },
         {
           role: "user",
           content: prompt,
         },
       ],
+      stream: true,
     });
 
     ws.data.speaking = true;
@@ -42,11 +43,11 @@ export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
 
       if (textChunk) {
         fullMessage += textChunk;
-        ws.data.phonic.sendTextChunk(textChunk);
+        ws.data.phonic.sendText(textChunk);
       }
     }
 
-    ws.data.phonic.sendFlush();
+    ws.data.phonic.flush();
 
     console.log(
       `OpenAI message${interrupted ? " (interrupted by user)" : ""}:`,

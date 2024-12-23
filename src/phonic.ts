@@ -44,7 +44,7 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
   };
 
   ws.data.phonic = {
-    sendTextChunk(text: string) {
+    sendText(text: string) {
       phonicWebSocket.send(
         JSON.stringify({
           type: "generate",
@@ -52,14 +52,14 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
         }),
       );
     },
-    sendFlush() {
+    flush() {
       phonicWebSocket.send(
         JSON.stringify({
           type: "flush",
         }),
       );
     },
-    sendStop() {
+    stop() {
       phonicWebSocket.send(
         JSON.stringify({
           type: "stop",

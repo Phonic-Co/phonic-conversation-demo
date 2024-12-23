@@ -70,7 +70,7 @@ export const setupDeepgram = (ws: ServerWebSocket<WebSocketData>) => {
             streamSid: ws.data.streamSid,
           }),
         );
-        ws.data.phonic.sendStop();
+        ws.data.phonic.stop();
         ws.data.speaking = false;
       }
     });
