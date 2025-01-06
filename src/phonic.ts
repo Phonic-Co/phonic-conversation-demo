@@ -22,9 +22,22 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
   }
 
   const { phonicWebSocket } = data;
+  let isFirstTextChunk = true;
+  let firstTextChunkSent = 0;
+  let isFirstAudioChunk = true;
 
   phonicWebSocket.onMessage((message) => {
     if (message.type === "audio_chunk") {
+      if (isFirstAudioChunk) {
+        console.info(
+          "TTFB:",
+          Math.round(performance.now() - firstTextChunkSent),
+          "ms",
+        );
+
+        isFirstAudioChunk = false;
+      }
+
       ws.send(
         JSON.stringify({
           event: "media",
@@ -34,6 +47,11 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
           },
         }),
       );
+    } else if (
+      message.type === "flush_confirm" ||
+      message.type === "stop_confirm"
+    ) {
+      isFirstAudioChunk = true;
     } else if (message.type === "error") {
       console.error("Phonic error:", message.error);
     }
@@ -52,9 +70,23 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
   ws.data.phonic = {
     generate(text: string) {
       phonicWebSocket.generate({ text });
+
+      if (isFirstTextChunk) {
+        firstTextChunkSent = performance.now();
+      }
+
+      isFirstTextChunk = false;
     },
-    flush: phonicWebSocket.flush,
-    stop: phonicWebSocket.stop,
+    flush: () => {
+      phonicWebSocket.flush();
+
+      isFirstTextChunk = true;
+    },
+    stop: () => {
+      phonicWebSocket.stop();
+
+      isFirstTextChunk = true;
+    },
     close: phonicWebSocket.close,
   };
 };
