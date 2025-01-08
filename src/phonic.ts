@@ -1,18 +1,13 @@
-import type { ServerWebSocket } from "bun";
+import type { Context } from "hono";
+import type { WSContext } from "hono/ws";
 import { Phonic } from "phonic";
-import type { WebSocketData } from "./types";
-
-const phonicApiKey = Bun.env.PHONIC_API_KEY;
-
-if (!phonicApiKey) {
-  throw new Error("PHONIC_API_KEY environment variable is not set");
-}
+import { phonicApiBaseUrl, phonicApiKey } from "./env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
-  baseUrl: Bun.env.PHONIC_API_BASE_URL || "https://api.phonic.co",
+  baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
 });
 
-export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
+export const setupPhonic = async (ws: WSContext, c: Context) => {
   const { data, error } = await phonic.tts.websocket({
     output_format: "mulaw_8000",
   });
@@ -41,7 +36,7 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
       ws.send(
         JSON.stringify({
           event: "media",
-          streamSid: ws.data.streamSid,
+          streamSid: c.get("streamSid"),
           media: {
             payload: message.audio,
           },
@@ -67,7 +62,7 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
     console.log(`Error from Phonic WebSocket: ${event.message}`);
   });
 
-  ws.data.phonic = {
+  c.set("phonic", {
     generate(text: string) {
       phonicWebSocket.generate({ text });
 
@@ -88,5 +83,5 @@ export const setupPhonic = async (ws: ServerWebSocket<WebSocketData>) => {
       isFirstTextChunk = true;
     },
     close: phonicWebSocket.close,
-  };
+  });
 };

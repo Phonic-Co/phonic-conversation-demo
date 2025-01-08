@@ -2,13 +2,16 @@
   "name": "phonic-conversation-demo",
   "version": "0.1.0",
   "scripts": {
-    "start": "bun run src/index.ts",
-    "dev": "bun run --hot src/index.ts",
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "check": "biome check --write",
-    "ci": "bun tsc && biome ci"
+    "ci": "tsc && biome ci"
   },
   "dependencies": {
     "@deepgram/sdk": "3.9.0",
+    "@hono/node-server": "1.13.7",
+    "@hono/node-ws": "1.0.5",
+    "dotenv": "16.4.7",
     "hono": "4.6.16",
     "openai": "4.77.3",
     "phonic": "0.3.0",
@@ -16,8 +19,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@flydotio/dockerfile": "0.6.1",
-    "@types/bun": "1.1.15",
+    "@flydotio/dockerfile": "0.5.9",
+    "tsx": "4.19.2",
     "typescript": "5.7.2"
   }
 }

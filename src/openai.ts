@@ -1,15 +1,10 @@
-import type { ServerWebSocket } from "bun";
+import type { Context } from "hono";
+import type { WSContext } from "hono/ws";
 import OpenAI from "openai";
-import type { WebSocketData } from "./types";
+import { openaiApiKey } from "./env-vars";
 
-const openaiApiKey = Bun.env.OPENAI_API_KEY;
-
-if (!openaiApiKey) {
-  throw new Error("OPENAI_API_KEY environment variable is not set");
-}
-
-export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
-  const openai = new OpenAI();
+export const setupOpenAI = (ws: WSContext, c: Context) => {
+  const openai = new OpenAI({ apiKey: openaiApiKey });
   const promptLLM = async (prompt: string) => {
     const stream = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -27,14 +22,14 @@ export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
       stream: true,
     });
 
-    ws.data.speaking = true;
+    c.set("speaking", true);
 
     let fullMessage = "";
     let interrupted = false;
 
     for await (const chunk of stream) {
       // If the user interrupted the AI speech, there is no point to continue collecting this text stream.
-      if (!ws.data.speaking) {
+      if (!c.get("speaking")) {
         interrupted = true;
         break;
       }
@@ -43,11 +38,11 @@ export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
 
       if (textChunk) {
         fullMessage += textChunk;
-        ws.data.phonic.generate(textChunk);
+        c.get("phonic").generate(textChunk);
       }
     }
 
-    ws.data.phonic.flush();
+    c.get("phonic").flush();
 
     console.log(
       `OpenAI message${interrupted ? " (interrupted by user)" : ""}:`,
@@ -55,5 +50,5 @@ export const setupOpenAI = (ws: ServerWebSocket<WebSocketData>) => {
     );
   };
 
-  ws.data.promptLLM = promptLLM;
+  c.set("promptLLM", promptLLM);
 };

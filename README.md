@@ -3,7 +3,7 @@
 ## Install dependencies
 
 ```
-bun i
+npm i
 ```
 
 ## Run locally
@@ -28,7 +28,7 @@ In Twilio console, open the phone number you want to call and add the following 
 Run the Hono server with hot reloading:
 
 ```
-bun dev
+npm run dev
 ```
 
 In another terminal, start `ngrok`:

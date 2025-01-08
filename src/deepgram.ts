@@ -1,16 +1,11 @@
 import { LiveTranscriptionEvents, createClient } from "@deepgram/sdk";
-import type { ServerWebSocket } from "bun";
-import type { WebSocketData } from "./types";
+import type { Context } from "hono";
+import type { WSContext } from "hono/ws";
+import { deepgramApiKey } from "./env-vars";
 
-const deepgramApiKey = Bun.env.DEEPGRAM_API_KEY;
+const deepgramClient = createClient(deepgramApiKey);
 
-if (!deepgramApiKey) {
-  throw new Error("DEEPGRAM_API_KEY environment variable is not set");
-}
-
-const deepgramClient = createClient(Bun.env.DEEPGRAM_API_KEY);
-
-export const setupDeepgram = (ws: ServerWebSocket<WebSocketData>) => {
+export const setupDeepgram = (ws: WSContext, c: Context) => {
   const deepgram = deepgramClient.listen.live({
     // Model
     model: "nova-2-phonecall",
@@ -29,7 +24,7 @@ export const setupDeepgram = (ws: ServerWebSocket<WebSocketData>) => {
     utterance_end_ms: 1000,
   });
 
-  let keepAlive: Timer | null = null;
+  let keepAlive: NodeJS.Timeout | null = null;
 
   if (keepAlive !== null) {
     clearInterval(keepAlive);
@@ -59,19 +54,20 @@ export const setupDeepgram = (ws: ServerWebSocket<WebSocketData>) => {
 
           isFinals = [];
 
-          ws.data.promptLLM(utterance);
+          c.get("promptLLM")(utterance);
         }
-      } else if (ws.data.speaking) {
+      } else if (c.get("speaking")) {
         console.log("Sending clear message");
 
         ws.send(
           JSON.stringify({
             event: "clear",
-            streamSid: ws.data.streamSid,
+            streamSid: c.get("streamSid"),
           }),
         );
-        ws.data.phonic.stop();
-        ws.data.speaking = false;
+
+        c.get("phonic").stop();
+        c.set("speaking", false);
       }
     });
 
@@ -94,5 +90,5 @@ export const setupDeepgram = (ws: ServerWebSocket<WebSocketData>) => {
     deepgram.send(new Blob([rawAudio]));
   };
 
-  ws.data.transcribe = transcribe;
+  c.set("transcribe", transcribe);
 };
