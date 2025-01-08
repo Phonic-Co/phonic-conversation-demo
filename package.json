@@ -16,8 +16,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@flydotio/dockerfile": "0.5.9",
-    "@types/bun": "1.1.14",
+    "@flydotio/dockerfile": "0.6.1",
+    "@types/bun": "1.1.15",
     "typescript": "5.7.2"
   }
 }
