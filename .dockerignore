@@ -1,8 +1,7 @@
-# deps
-node_modules/
-
-# TypeScript incremental compilation cache
+fly.toml
+Dockerfile
+.dockerignore
+node_modules
+.git
 *.tsbuildinfo
-
-# Environment variables
 .env*

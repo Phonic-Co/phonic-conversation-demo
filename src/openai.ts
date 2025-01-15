@@ -42,7 +42,9 @@ export const setupOpenAI = (ws: WSContext, c: Context) => {
       }
     }
 
-    c.get("phonic").flush();
+    if (!interrupted) {
+      c.get("phonic").flush();
+    }
 
     console.log(
       `OpenAI message${interrupted ? " (interrupted by user)" : ""}:`,

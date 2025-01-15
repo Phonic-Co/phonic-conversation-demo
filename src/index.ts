@@ -69,6 +69,12 @@ app.get(
   }),
 );
 
-const server = serve(app);
+const port = 3000;
+const server = serve({
+  fetch: app.fetch,
+  port,
+});
 
 injectWebSocket(server);
+
+console.log(`Listening on port ${port}`);
