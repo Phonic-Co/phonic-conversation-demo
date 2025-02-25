@@ -14,9 +14,8 @@ Once you create `YOUR_NGROK_HOST`, use it below.
 In the project root, create `.env.local` with the following environment variables:
 
 ```
-DEEPGRAM_API_KEY="..."
-OPENAI_API_KEY="..."
 PHONIC_API_KEY="ph_..."
+PHONIC_API_BASE_URL="..."
 ```
 
 In Twilio console, open the phone number you want to call and add the following configuration:
