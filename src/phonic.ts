@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
-import { Phonic } from "phonic";
+import { Phonic, type PhonicSTSConfig } from "phonic";
 import { phonicApiBaseUrl, phonicApiKey } from "./env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
@@ -8,47 +8,69 @@ const phonic = new Phonic(phonicApiKey, {
 });
 
 export const setupPhonic = async (ws: WSContext, c: Context) => {
-  const { data, error } = await phonic.tts.websocket({
-    output_format: "mulaw_8000",
-  });
+  const { data, error } = await phonic.sts.websocket();
 
   if (error !== null) {
     throw new Error(error.message);
   }
 
   const { phonicWebSocket } = data;
-  let isFirstTextChunk = true;
-  let firstTextChunkSent = 0;
+  let userFinishedSpeakingTimestamp = 0;
   let isFirstAudioChunk = true;
+  let isUserSpeaking = false;
 
   phonicWebSocket.onMessage((message) => {
-    if (message.type === "audio_chunk") {
-      if (isFirstAudioChunk) {
-        console.info(
-          "TTFB:",
-          Math.round(performance.now() - firstTextChunkSent),
-          "ms",
-        );
+    switch (message.type) {
+      case "input_text": {
+        console.log(`\nUser: ${message.text}`);
 
-        isFirstAudioChunk = false;
+        isFirstAudioChunk = true;
+
+        break;
       }
 
-      ws.send(
-        JSON.stringify({
-          event: "media",
-          streamSid: c.get("streamSid"),
-          media: {
-            payload: message.audio,
-          },
-        }),
-      );
-    } else if (
-      message.type === "flush_confirm" ||
-      message.type === "stop_confirm"
-    ) {
-      isFirstAudioChunk = true;
-    } else if (message.type === "error") {
-      console.error("Phonic error:", message.error);
+      case "is_user_speaking": {
+        if (isUserSpeaking && !message.isUserSpeaking) {
+          userFinishedSpeakingTimestamp = performance.now();
+        }
+
+        isUserSpeaking = message.isUserSpeaking;
+
+        break;
+      }
+
+      case "audio_chunk": {
+        if (isFirstAudioChunk) {
+          console.log(
+            "\nTTFB:",
+            Math.round(performance.now() - userFinishedSpeakingTimestamp),
+            "ms",
+          );
+          process.stdout.write("Assistant: ");
+
+          isFirstAudioChunk = false;
+        }
+
+        if (message.text !== "") {
+          process.stdout.write(message.text);
+        }
+
+        ws.send(
+          JSON.stringify({
+            event: "media",
+            streamSid: c.get("streamSid"),
+            media: {
+              payload: message.audio,
+            },
+          }),
+        );
+        break;
+      }
+
+      case "error": {
+        console.error("Phonic error:", message.error);
+        break;
+      }
     }
   });
 
@@ -62,26 +84,17 @@ export const setupPhonic = async (ws: WSContext, c: Context) => {
     console.log(`Error from Phonic WebSocket: ${event.message}`);
   });
 
-  c.set("phonic", {
-    generate(text: string) {
-      phonicWebSocket.generate({ text });
-
-      if (isFirstTextChunk) {
-        firstTextChunkSent = performance.now();
+  return {
+    config(params: PhonicSTSConfig) {
+      if (params.welcome_message) {
+        userFinishedSpeakingTimestamp = performance.now();
       }
 
-      isFirstTextChunk = false;
+      phonicWebSocket.config(params);
     },
-    flush: () => {
-      phonicWebSocket.flush();
-
-      isFirstTextChunk = true;
-    },
-    stop: () => {
-      phonicWebSocket.stop();
-
-      isFirstTextChunk = true;
+    audioChunk: (audio: string) => {
+      phonicWebSocket.audioChunk({ audio });
     },
     close: phonicWebSocket.close,
-  });
+  };
 };

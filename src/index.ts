@@ -2,8 +2,6 @@ import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
-import { setupDeepgram } from "./deepgram";
-import { setupOpenAI } from "./openai";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
 
@@ -15,8 +13,6 @@ app.post("/incoming-call", (c) => {
   const url = new URL(c.req.url);
   const response = new VoiceResponse();
 
-  response.say("Speak now");
-
   response.connect().stream({
     url: `wss://${url.host}/ws`,
   });
@@ -27,14 +23,20 @@ app.post("/incoming-call", (c) => {
 app.get(
   "/ws",
   upgradeWebSocket((c) => {
+    let phonic: Awaited<ReturnType<typeof setupPhonic>>;
+
     return {
       async onOpen(_event, ws) {
         c.set("streamSid", null);
-        c.set("speaking", false);
 
-        setupDeepgram(ws, c);
-        setupOpenAI(ws, c);
-        await setupPhonic(ws, c);
+        phonic = await setupPhonic(ws, c);
+
+        phonic.config({
+          input_format: "mulaw_8000",
+          welcome_message: "Hello, how can I help you today?",
+          voice_id: "meredith",
+          output_format: "mulaw_8000",
+        });
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -54,7 +56,7 @@ app.get(
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            c.get("transcribe")(messageObj.media.payload);
+            phonic.audioChunk(messageObj.media.payload);
           }
         } catch (error) {
           console.error("Failed to parse Twilio message:", error);
@@ -63,7 +65,7 @@ app.get(
       onClose() {
         console.log("Twilio call finished");
 
-        c.get("phonic").close();
+        phonic.close();
       },
     };
   }),
