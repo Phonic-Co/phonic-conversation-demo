@@ -4,13 +4,13 @@
 ![Twilio](https://img.shields.io/badge/Twilio-Integrated-red)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-A production-ready application that connects Twilio phone calls to the Phonic API, enabling interactive voice conversations with AI. This demo showcases how to build voice-enabled applications using modern web technologies.
+A production-ready application that connects Twilio phone calls to the Phonic API using the Phonic Node.js SDK, enabling interactive voice conversations with AI.
 
 ## 📋 Prerequisites
 
-- [Node.js](https://nodejs.org/) (v16 or higher recommended)
+- [Node.js](https://nodejs.org/) (v22 or higher recommended)
 - [Twilio](https://www.twilio.com/) account with a configured phone number
-- [Phonic](https://phonic.ai/) API key for voice processing
+- [Phonic](https://phonic.co/) API key for voice processing
 - [ngrok](https://ngrok.com/) account for secure tunneling
 
 ## 🚀 Quick Start
@@ -54,7 +54,7 @@ ngrok http 3000
 
 ### 5. Launch the Application
 
-Start the Phonic server with hot reloading:
+Start the application server with hot reloading:
 
 ```bash
 npm run dev
