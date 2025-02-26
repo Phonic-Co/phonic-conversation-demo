@@ -1,42 +1,68 @@
 # Phonic Conversation Demo
 
-## Install dependencies
+![Phonic API](https://img.shields.io/badge/Phonic%20API-Enabled-blue)
+![Twilio](https://img.shields.io/badge/Twilio-Integrated-red)
+![License](https://img.shields.io/badge/License-MIT-green)
 
+A production-ready application that connects Twilio phone calls to the Phonic API using the Phonic Node.js SDK, enabling interactive voice conversations with AI.
+
+## 📋 Prerequisites
+
+- [Node.js](https://nodejs.org/) (v22 or higher recommended)
+- [Twilio](https://www.twilio.com/) account with a configured phone number
+- [Phonic](https://phonic.co/) API key for voice processing
+- [ngrok](https://ngrok.com/) account for secure tunneling
+
+## 🚀 Quick Start
+
+### 1. Clone and Install
+
+```bash
+git clone https://github.com/Phonic-Co/phonic-conversation-demo
+cd phonic-conversation-demo
+npm install
 ```
-npm i
+
+### 2. Configure Environment
+
+1. Obtain a Phonic API Key by visiting the [Phonic API Keys](https://phonic.co/api-keys) page and creating an API key.
+2. Create a `.env.local` file in the project root with the following contents:
+```
+PHONIC_API_KEY="your_api_key_here"
 ```
 
-## Run locally
+### 3. Set Up ngrok Tunnel
 
-Use [ngrok](https://ngrok.com) to expose `localhost:3000` to the internet and allow Twilio to call it.
-Once you create `YOUR_NGROK_HOST`, use it below.
+Start ngrok to expose your local server to the internet:
 
-In the project root, create `.env.local` with the following environment variables:
-
-```
-PHONIC_API_KEY="ph_..."
+```bash
+ngrok http 3000
 ```
 
-In Twilio console, open the phone number you want to call and add the following configuration:
+### 4. Configure Twilio Webhook
 
-* __A call comes in__: Webhook
-* __URL__: https://YOUR_NGROK_HOST/incoming-call
-* __HTTP__: HTTP POST
+1. Navigate to the Twilio [Active Numbers](https://console.twilio.com/us1/develop/phone-numbers/manage/incoming) page
+2. Select your phone number
+3. Under **Voice Configuration**:
+   - Set **When a call comes in** to **Webhook**
+   - Set the URL to `https://YOUR_NGROK_HOST/incoming-call`
+   - Set the HTTP method to **HTTP POST**
+   - Save your changes
 
-Run the Hono server with hot reloading:
+<img width="1387" alt="Example Twilio Setup" src="https://github.com/user-attachments/assets/3f4dbae2-b67e-453a-8157-90b77b0e6360" />
 
-```
+
+### 5. Launch the Application
+
+Start the application server with hot reloading:
+
+```bash
 npm run dev
 ```
 
-In another terminal, start `ngrok`:
-
-```
-ngrok http --domain=YOUR_NGROK_HOST 3000
-```
-
-> [!NOTE]
-> `YOUR_NGROK_HOST` should not contain the protocol, e.g. it should be `red-baloon.ngrok-free.app`, not `https://red-baloon.ngrok-free.app`.
-
-
+You should see output indicating that the server is running on port 3000.
 Now, go ahead and call the phone number you configured in Twilio!
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
