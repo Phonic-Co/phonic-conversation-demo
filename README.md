@@ -25,7 +25,7 @@ npm install
 
 ### 2. Configure Environment
 
-1. Obtain a Phonic API Key by visiting the [Phonic API Keys](https://phonic.co/api-keys) page and creating an API key.
+1. Obtain a Phonic API Key by visiting the [Phonic API Keys](https://phonic.co/api-keys) page and creating an API key. If you see the "Coming Soon" page when you click the link, just refresh!
 2. Create a `.env.local` file in the project root with the following contents:
 ```
 PHONIC_API_KEY="your_api_key_here"
