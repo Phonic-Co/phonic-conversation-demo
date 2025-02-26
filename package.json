@@ -4,7 +4,6 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
-    "call": "tsx src/call.ts",
     "check": "biome check --write",
     "ci": "tsc && biome ci"
   },

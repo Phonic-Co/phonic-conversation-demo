@@ -29,13 +29,6 @@ npm install
 2. Create a `.env.local` file in the project root with the following contents:
 ```
 PHONIC_API_KEY="your_api_key_here"
-
-# These are needed if you'd like to receive a call
-NGROK_URL="..."
-TWILIO_ACCOUNT_SID="..."
-TWILIO_AUTH_TOKEN="..."
-TWILIO_PHONE_NUMBER="..." # e.g. +19189391234
-USER_PHONE_NUMBER="..."   # e.g. +19189395678
 ```
 
 ### 3. Set Up ngrok Tunnel
@@ -52,7 +45,7 @@ ngrok http 3000
 2. Select your phone number
 3. Under **Voice Configuration**:
    - Set **When a call comes in** to **Webhook**
-   - Set the URL to `https://YOUR_NGROK_HOST/inbound`
+   - Set the URL to `https://YOUR_NGROK_HOST/incoming-call`
    - Set the HTTP method to **HTTP POST**
    - Save your changes
 
@@ -69,11 +62,7 @@ npm run dev
 ```
 
 You should see output indicating that the server is running on port 3000.
-
-Now, you have two options to start a conversation:
-
-1. Call the phone number you configured in Twilio
-2. Receive a call on `USER_PHONE_NUMBER` by running `npm run call` in another terminal.
+Now, go ahead and call the phone number you configured in Twilio!
 
 ## 📄 License
 
