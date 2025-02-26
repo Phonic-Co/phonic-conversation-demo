@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
 import { Phonic, type PhonicSTSConfig } from "phonic";
-import { phonicApiBaseUrl, phonicApiKey } from "./env-vars";
+import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
   baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
@@ -22,7 +22,7 @@ export const setupPhonic = async (ws: WSContext, c: Context) => {
   phonicWebSocket.onMessage((message) => {
     switch (message.type) {
       case "input_text": {
-        console.log(`\nUser: ${message.text}`);
+        console.log(`\n\nUser: ${message.text}`);
 
         isFirstAudioChunk = true;
 

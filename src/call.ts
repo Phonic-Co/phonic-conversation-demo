@@ -5,7 +5,7 @@ import {
   twilioAuthToken,
   twilioPhoneNumber,
   userPhoneNumber,
-} from "./env-vars";
+} from "./call-env-vars";
 
 const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
 
@@ -19,7 +19,7 @@ async function main() {
       url: `${ngrokUrl}/outbound`,
     });
 
-    console.log(`Call SID: ${call.sid}`);
+    console.log(`Success! Call SID: ${call.sid}`);
   } catch (error) {
     console.error("Failed to make a call:", error);
   }
