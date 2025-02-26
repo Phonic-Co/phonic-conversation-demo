@@ -56,7 +56,8 @@ ngrok http 3000
    - Set the HTTP method to **HTTP POST**
    - Save your changes
 
-<img width="1387" alt="Example Twilio Setup" src="https://github.com/user-attachments/assets/3f4dbae2-b67e-453a-8157-90b77b0e6360" />
+![CleanShot 2025-02-26 at 12 24 23@2x](https://github.com/user-attachments/assets/f8b5ea16-8c01-4d7f-bdf4-04c128fc2c53)
+
 
 
 ### 5. Launch the Application
