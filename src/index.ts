@@ -24,19 +24,20 @@ app.get(
   "/inbound-ws",
   upgradeWebSocket((c) => {
     let phonic: Awaited<ReturnType<typeof setupPhonic>>;
+    let isPhonicReady = false;
 
     return {
       async onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        phonic = await setupPhonic(ws, c);
-
-        phonic.config({
+        phonic = await setupPhonic(ws, c, {
           input_format: "mulaw_8000",
           welcome_message: "Hello, how can I help you today?",
           voice_id: "meredith",
           output_format: "mulaw_8000",
         });
+
+        isPhonicReady = true;
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -53,6 +54,7 @@ app.get(
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
+            isPhonicReady &&
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
@@ -63,7 +65,7 @@ app.get(
         }
       },
       onClose() {
-        console.log("Twilio call finished");
+        console.log("\n\nTwilio call finished");
 
         phonic.close();
       },
