@@ -7,15 +7,20 @@ const phonic = new Phonic(phonicApiKey, {
   baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
 });
 
-export const setupPhonic = async (ws: WSContext, c: Context) => {
-  const { data, error } = await phonic.sts.websocket();
+export const setupPhonic = async (
+  ws: WSContext,
+  c: Context,
+  config: PhonicSTSConfig,
+) => {
+  const { data, error } = await phonic.sts.websocket(config);
 
   if (error !== null) {
     throw new Error(error.message);
   }
 
   const { phonicWebSocket } = data;
-  let userFinishedSpeakingTimestamp = 0;
+
+  let userFinishedSpeakingTimestamp = performance.now();
   let isFirstAudioChunk = true;
   let isUserSpeaking = false;
 
@@ -85,13 +90,6 @@ export const setupPhonic = async (ws: WSContext, c: Context) => {
   });
 
   return {
-    config(params: PhonicSTSConfig) {
-      if (params.welcome_message) {
-        userFinishedSpeakingTimestamp = performance.now();
-      }
-
-      phonicWebSocket.config(params);
-    },
     audioChunk: (audio: string) => {
       phonicWebSocket.audioChunk({ audio });
     },
