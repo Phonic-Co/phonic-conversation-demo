@@ -14,6 +14,9 @@ export type WebSocketData = {
 export type TwilioWebSocketMessage =
   | {
       event: "start";
+      start: {
+        callSid: string;
+      };
       streamSid: string;
     }
   | {

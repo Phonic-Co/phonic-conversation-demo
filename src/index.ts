@@ -29,6 +29,7 @@ app.get(
     return {
       async onOpen(_event, ws) {
         c.set("streamSid", null);
+        c.set("callSid", null);
 
         phonic = await setupPhonic(ws, c, {
           input_format: "mulaw_8000",
@@ -36,6 +37,7 @@ app.get(
           voice_id: "meredith",
           output_format: "mulaw_8000",
         });
+        phonic.setExternalId(c.get("callSid"));
 
         isPhonicReady = true;
       },
@@ -51,6 +53,7 @@ app.get(
 
           if (messageObj.event === "start") {
             c.set("streamSid", messageObj.streamSid);
+            c.set("callSid", messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
@@ -93,6 +96,7 @@ app.get(
     return {
       async onOpen(_event, ws) {
         c.set("streamSid", null);
+        c.set("callSid", null);
 
         phonic = await setupPhonic(ws, c, {
           input_format: "mulaw_8000",
@@ -101,6 +105,7 @@ app.get(
           voice_id: "meredith",
           output_format: "mulaw_8000",
         });
+        phonic.setExternalId(c.get("callSid"));
 
         isPhonicReady = true;
       },
@@ -116,6 +121,7 @@ app.get(
 
           if (messageObj.event === "start") {
             c.set("streamSid", messageObj.streamSid);
+            c.set("callSid", messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (

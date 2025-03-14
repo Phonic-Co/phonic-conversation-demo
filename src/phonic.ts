@@ -93,6 +93,9 @@ export const setupPhonic = async (
     audioChunk: (audio: string) => {
       phonicWebSocket.audioChunk({ audio });
     },
+    setExternalId: (externalId: string) => {
+      phonicWebSocket.setExternalId({ externalId });
+    },
     close: phonicWebSocket.close,
   };
 };
