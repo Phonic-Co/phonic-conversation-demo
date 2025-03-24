@@ -76,7 +76,7 @@ app.get(
             const bufferDuration = inputBuffer.length / sampleRate;
 
             if (bufferDuration >= 0.25) {
-              phonic.audioChunk(messageObj.media.payload);
+              phonic.audioChunk(Buffer.from(inputBuffer).toString('base64'));
               inputBuffer = new Uint8Array(0);
             }
           }
@@ -161,7 +161,7 @@ app.get(
             const bufferDuration = inputBuffer.length / sampleRate;
 
             if (bufferDuration >= 0.25) {
-              phonic.audioChunk(messageObj.media.payload);
+              phonic.audioChunk(Buffer.from(inputBuffer).toString('base64'));
               inputBuffer = new Uint8Array(0);
             }
           }
