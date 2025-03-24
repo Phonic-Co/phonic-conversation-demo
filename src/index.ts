@@ -25,6 +25,8 @@ app.get(
   upgradeWebSocket((c) => {
     let phonic: Awaited<ReturnType<typeof setupPhonic>>;
     let isPhonicReady = false;
+    const sampleRate = 8000; // Twilio always uses mulaw, 8000 Hz 8-bit PCM
+    let inputBuffer = new Uint8Array(0);
 
     return {
       async onOpen(_event, ws) {
@@ -61,7 +63,22 @@ app.get(
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            phonic.audioChunk(messageObj.media.payload);
+            // Twilio chunks are too short (20ms); accumulate to >=250ms then send to Phonic API
+            const audioBytes = Buffer.from(messageObj.media.payload, "base64");
+            const audioArray = new Uint8Array(audioBytes);
+            const newBuffer = new Uint8Array(
+              inputBuffer.length + audioArray.length,
+            );
+            newBuffer.set(inputBuffer, 0);
+            newBuffer.set(audioArray, inputBuffer.length);
+            inputBuffer = newBuffer;
+
+            const bufferDuration = inputBuffer.length / sampleRate;
+
+            if (bufferDuration >= 0.25) {
+              phonic.audioChunk(messageObj.media.payload);
+              inputBuffer = new Uint8Array(0);
+            }
           }
         } catch (error) {
           console.error("Failed to parse Twilio message:", error);
@@ -92,6 +109,8 @@ app.get(
   upgradeWebSocket((c) => {
     let phonic: Awaited<ReturnType<typeof setupPhonic>>;
     let isPhonicReady = false;
+    const sampleRate = 8000; // Twilio always uses mulaw, 8000 Hz 8-bit PCM
+    let inputBuffer = new Uint8Array(0);
 
     return {
       async onOpen(_event, ws) {
@@ -129,7 +148,22 @@ app.get(
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            phonic.audioChunk(messageObj.media.payload);
+            // Twilio chunks are too short (20ms); accumulate to >=250ms then send to Phonic API
+            const audioBytes = Buffer.from(messageObj.media.payload, "base64");
+            const audioArray = new Uint8Array(audioBytes);
+            const newBuffer = new Uint8Array(
+              inputBuffer.length + audioArray.length,
+            );
+            newBuffer.set(inputBuffer, 0);
+            newBuffer.set(audioArray, inputBuffer.length);
+            inputBuffer = newBuffer;
+
+            const bufferDuration = inputBuffer.length / sampleRate;
+
+            if (bufferDuration >= 0.25) {
+              phonic.audioChunk(messageObj.media.payload);
+              inputBuffer = new Uint8Array(0);
+            }
           }
         } catch (error) {
           console.error("Failed to parse Twilio message:", error);
