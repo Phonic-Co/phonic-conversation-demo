@@ -106,7 +106,7 @@ app.get(
                     payload: audioBase64,
                   },
                 }),
-              );      
+              );
             } else {
               phonic.audioChunk(messageObj.media.payload);
             }
