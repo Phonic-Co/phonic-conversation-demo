@@ -12,6 +12,7 @@
     "@hono/node-server": "1.13.8",
     "@hono/node-ws": "1.1.0",
     "@types/node-wav": "^0.0.4",
+    "alawmulaw": "^6.0.0",
     "dotenv": "16.4.7",
     "hono": "4.7.4",
     "node-wav": "^0.0.2",

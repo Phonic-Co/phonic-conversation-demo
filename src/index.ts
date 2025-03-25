@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
+import { mulaw } from "alawmulaw";
 import { Hono } from "hono";
 import { decode } from "node-wav";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
@@ -89,11 +90,17 @@ app.get(
               replayPlaybackTime !== undefined &&
               sampleRate !== undefined
             ) {
-              const audioToSend = channelData[0].slice(
+              const audioFloat32 = channelData[0].slice(
                 replayPlaybackTime * sampleRate,
                 (replayPlaybackTime + 0.02) * sampleRate,
               );
-              const audioBase64 = Buffer.from(audioToSend.buffer).toString(
+              const audioUint8MuLaw = new Uint8Array(audioFloat32.length);
+              for (let i = 0; i < audioUint8MuLaw.length; i++) {
+                audioUint8MuLaw[i] = mulaw.encodeSample(
+                  Math.floor(audioFloat32[i] * 32768),
+                );
+              }
+              const audioBase64 = Buffer.from(audioUint8MuLaw.buffer).toString(
                 "base64",
               );
               phonic.audioChunk(audioBase64);
