@@ -10,4 +10,6 @@ if (!phonicApiKey) {
 
 const phonicApiBaseUrl = process.env.PHONIC_API_BASE_URL;
 
-export { phonicApiBaseUrl, phonicApiKey };
+const replayWavFilePath = process.env.REPLAY_WAV_FILE_PATH;
+
+export { phonicApiBaseUrl, phonicApiKey, replayWavFilePath };

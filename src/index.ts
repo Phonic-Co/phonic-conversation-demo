@@ -1,8 +1,11 @@
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
+import { readFileSync } from "fs";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
+import { decode } from "node-wav";
 import { setupPhonic } from "./phonic";
+import { replayWavFilePath } from "./phonic-env-vars";
 import type { TwilioWebSocketMessage } from "./types";
 
 const app = new Hono();
@@ -23,6 +26,11 @@ app.post("/inbound", (c) => {
 app.get(
   "/inbound-ws",
   upgradeWebSocket((c) => {
+    const buffer = replayWavFilePath !== undefined ? readFileSync(replayWavFilePath) : undefined;
+    const result = replayWavFilePath !== undefined ? decode(buffer) : undefined;
+    const { sampleRate, channelData } = result;
+    let replayPlaybackTime = replayWavFilePath !== undefined ? 0.0 : undefined;
+    console.log("\n\nreading replay wav from:", replayWavFilePath, "\n\nsample rate:", sampleRate, "\n\nchannels:", channelData.length, "\n\nlength in samples:", channelData[0].length)
     let phonic: Awaited<ReturnType<typeof setupPhonic>>;
     let isPhonicReady = false;
 
@@ -61,7 +69,12 @@ app.get(
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            phonic.audioChunk(messageObj.media.payload);
+            if (replayPlaybackTime !== undefined) {
+              phonic.audioChunk(channelData[0].slice(replayPlaybackTime * sampleRate, (replayPlaybackTime + 0.02) * sampleRate));
+              replayPlaybackTime += 0.02;
+            } else {
+              phonic.audioChunk(messageObj.media.payload);
+            }
           }
         } catch (error) {
           console.error("Failed to parse Twilio message:", error);
