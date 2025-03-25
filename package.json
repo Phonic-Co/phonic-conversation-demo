@@ -11,8 +11,10 @@
   "dependencies": {
     "@hono/node-server": "1.13.8",
     "@hono/node-ws": "1.1.0",
+    "@types/node-wav": "^0.0.4",
     "dotenv": "16.4.7",
     "hono": "4.7.4",
+    "node-wav": "^0.0.2",
     "phonic": "0.13.1",
     "tsx": "4.19.3",
     "twilio": "5.5.0"

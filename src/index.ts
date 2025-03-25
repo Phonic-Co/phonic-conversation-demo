@@ -1,9 +1,9 @@
+import { readFileSync } from "node:fs";
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
-import { readFileSync } from "fs";
-import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { decode } from "node-wav";
+import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { setupPhonic } from "./phonic";
 import { replayWavFilePath } from "./phonic-env-vars";
 import type { TwilioWebSocketMessage } from "./types";
@@ -26,11 +26,25 @@ app.post("/inbound", (c) => {
 app.get(
   "/inbound-ws",
   upgradeWebSocket((c) => {
-    const buffer = replayWavFilePath !== undefined ? readFileSync(replayWavFilePath) : undefined;
-    const result = replayWavFilePath !== undefined ? decode(buffer) : undefined;
-    const { sampleRate, channelData } = result;
+    const buffer =
+      replayWavFilePath !== undefined
+        ? readFileSync(replayWavFilePath)
+        : undefined;
+    const result = buffer !== undefined ? decode(buffer) : undefined;
+    const sampleRate = result?.sampleRate;
+    const channelData = result?.channelData;
     let replayPlaybackTime = replayWavFilePath !== undefined ? 0.0 : undefined;
-    console.log("\n\nreading replay wav from:", replayWavFilePath, "\n\nsample rate:", sampleRate, "\n\nchannels:", channelData.length, "\n\nlength in samples:", channelData[0].length)
+    console.log(
+      "\n\nreading replay wav from:",
+      replayWavFilePath,
+      "\n\nsample rate:",
+      sampleRate,
+      "\n\nchannels:",
+      channelData?.length,
+    );
+    if (channelData !== undefined) {
+      console.log("\n\nlength in samples:", channelData[0].length);
+    }
     let phonic: Awaited<ReturnType<typeof setupPhonic>>;
     let isPhonicReady = false;
 
@@ -69,8 +83,20 @@ app.get(
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            if (replayPlaybackTime !== undefined) {
-              phonic.audioChunk(channelData[0].slice(replayPlaybackTime * sampleRate, (replayPlaybackTime + 0.02) * sampleRate));
+            if (
+              replayWavFilePath !== undefined &&
+              channelData !== undefined &&
+              replayPlaybackTime !== undefined &&
+              sampleRate !== undefined
+            ) {
+              const audioToSend = channelData[0].slice(
+                replayPlaybackTime * sampleRate,
+                (replayPlaybackTime + 0.02) * sampleRate,
+              );
+              const audioBase64 = Buffer.from(audioToSend.buffer).toString(
+                "base64",
+              );
+              phonic.audioChunk(audioBase64);
               replayPlaybackTime += 0.02;
             } else {
               phonic.audioChunk(messageObj.media.payload);
