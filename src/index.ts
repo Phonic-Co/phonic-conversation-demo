@@ -98,6 +98,15 @@ app.get(
               );
               phonic.audioChunk(audioBase64);
               replayPlaybackTime += 0.02;
+              ws.send(
+                JSON.stringify({
+                  event: "media",
+                  streamSid: c.get("streamSid"),
+                  media: {
+                    payload: audioBase64,
+                  },
+                }),
+              );      
             } else {
               phonic.audioChunk(messageObj.media.payload);
             }
