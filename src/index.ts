@@ -105,6 +105,9 @@ app.get(
               );
               phonic.audioChunk(audioBase64);
               replayPlaybackTime += 0.02;
+              if ((replayPlaybackTime + 0.02) * sampleRate >= channelData[0].length) {
+                replayPlaybackTime = 0.0;
+              }
               ws.send(
                 JSON.stringify({
                   event: "media",
