@@ -9,17 +9,17 @@
     "ci": "tsc && biome ci"
   },
   "dependencies": {
-    "@hono/node-server": "1.13.8",
-    "@hono/node-ws": "1.1.0",
+    "@hono/node-server": "1.14.0",
+    "@hono/node-ws": "1.1.1",
     "dotenv": "16.4.7",
-    "hono": "4.7.4",
-    "phonic": "0.13.1",
+    "hono": "4.7.5",
+    "phonic": "0.14.0",
     "tsx": "4.19.3",
-    "twilio": "5.5.0"
+    "twilio": "5.5.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@flydotio/dockerfile": "0.7.8",
+    "@flydotio/dockerfile": "0.7.10",
     "typescript": "5.8.2"
   }
 }
