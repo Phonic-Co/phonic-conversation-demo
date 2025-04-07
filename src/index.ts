@@ -3,7 +3,6 @@ import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { setupPhonic } from "./phonic";
-import { phonicProjectId } from "./phonic-env-vars";
 import type { TwilioWebSocketMessage } from "./types";
 
 const app = new Hono();
@@ -33,7 +32,7 @@ app.get(
         c.set("callSid", null);
 
         phonic = await setupPhonic(ws, c, {
-          project_id: phonicProjectId,
+          project: "main",
           input_format: "mulaw_8000",
           welcome_message: "Hello, how can I help you today?",
           voice_id: "meredith",
@@ -101,7 +100,7 @@ app.get(
         c.set("callSid", null);
 
         phonic = await setupPhonic(ws, c, {
-          project_id: phonicProjectId,
+          project: "main",
           input_format: "mulaw_8000",
           welcome_message:
             "Hello! This is your AI assistant calling. How are you doing today?",
