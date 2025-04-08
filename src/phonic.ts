@@ -72,6 +72,15 @@ export const setupPhonic = async (
         break;
       }
 
+      case "interrupted_response": {
+        ws.send(JSON.stringify({
+            event: "clear",
+            streamSid: c.get("streamSid"),
+          }),
+        );
+        break;
+      }
+
       case "error": {
         console.error("Phonic error:", message.error);
         break;
