@@ -28,14 +28,14 @@ npm install
 1. Obtain a Phonic API Key by visiting the [Phonic API Keys](https://phonic.co/api-keys) page and creating an API key. If you see the "Coming Soon" page when you click the link, just refresh!
 2. Create a `.env.local` file in the project root with the following contents:
 ```
-PHONIC_API_KEY="your_api_key_here"
+PHONIC_API_KEY="your_api_key_here"  # starts with ph_
 
 # These are needed if you'd like to receive a call
 NGROK_URL="..."
 TWILIO_ACCOUNT_SID="..."
 TWILIO_AUTH_TOKEN="..."
-TWILIO_PHONE_NUMBER="..." # e.g. +19189391234
-USER_PHONE_NUMBER="..."   # e.g. +19189395678
+TWILIO_PHONE_NUMBER="..."  # e.g. +19189391234
+USER_PHONE_NUMBER="..."    # e.g. +19189395678
 ```
 
 ### 3. Set Up ngrok Tunnel

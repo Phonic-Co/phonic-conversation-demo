@@ -32,6 +32,7 @@ app.get(
         c.set("callSid", null);
 
         phonic = await setupPhonic(ws, c, {
+          project: "main",
           input_format: "mulaw_8000",
           welcome_message: "Hello, how can I help you today?",
           voice_id: "greta",
@@ -99,6 +100,7 @@ app.get(
         c.set("callSid", null);
 
         phonic = await setupPhonic(ws, c, {
+          project: "main",
           input_format: "mulaw_8000",
           welcome_message:
             "Hello! This is your AI assistant calling. How are you doing today?",
