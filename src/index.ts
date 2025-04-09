@@ -34,7 +34,7 @@ app.get(
         phonic = await setupPhonic(ws, c, {
           input_format: "mulaw_8000",
           welcome_message: "Hello, how can I help you today?",
-          voice_id: "meredith",
+          voice_id: "greta",
           output_format: "mulaw_8000",
         });
         phonic.setExternalId(c.get("callSid"));
@@ -102,7 +102,7 @@ app.get(
           input_format: "mulaw_8000",
           welcome_message:
             "Hello! This is your AI assistant calling. How are you doing today?",
-          voice_id: "meredith",
+          voice_id: "greta",
           output_format: "mulaw_8000",
         });
         phonic.setExternalId(c.get("callSid"));
