@@ -73,7 +73,8 @@ export const setupPhonic = async (
       }
 
       case "interrupted_response": {
-        ws.send(JSON.stringify({
+        ws.send(
+          JSON.stringify({
             event: "clear",
             streamSid: c.get("streamSid"),
           }),
