@@ -7,18 +7,12 @@ const phonic = new Phonic(phonicApiKey, {
   baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
 });
 
-export const setupPhonic = async (
+export const setupPhonic = (
   ws: WSContext,
   c: Context,
   config: PhonicSTSConfig,
 ) => {
-  const { data, error } = await phonic.sts.websocket(config);
-
-  if (error !== null) {
-    throw new Error(error.message);
-  }
-
-  const { phonicWebSocket } = data;
+  const phonicWebSocket = phonic.sts.websocket(config);
 
   let userFinishedSpeakingTimestamp = performance.now();
   let isFirstAudioChunk = true;
