@@ -23,24 +23,19 @@ app.post("/inbound", (c) => {
 app.get(
   "/inbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: Awaited<ReturnType<typeof setupPhonic>>;
-    let isPhonicReady = false;
+    let phonic: ReturnType<typeof setupPhonic>;
 
     return {
-      async onOpen(_event, ws) {
+      onOpen(_event, ws) {
         c.set("streamSid", null);
-        c.set("callSid", null);
 
-        phonic = await setupPhonic(ws, c, {
+        phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
           welcome_message: "Hello, how can I help you today?",
-          voice_id: "meredith",
+          voice_id: "greta",
           output_format: "mulaw_8000",
         });
-        phonic.setExternalId(c.get("callSid"));
-
-        isPhonicReady = true;
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -54,11 +49,11 @@ app.get(
 
           if (messageObj.event === "start") {
             c.set("streamSid", messageObj.streamSid);
-            c.set("callSid", messageObj.start.callSid);
+
+            phonic.setExternalId(messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
-            isPhonicReady &&
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
@@ -91,25 +86,20 @@ app.post("/outbound", (c) => {
 app.get(
   "/outbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: Awaited<ReturnType<typeof setupPhonic>>;
-    let isPhonicReady = false;
+    let phonic: ReturnType<typeof setupPhonic>;
 
     return {
-      async onOpen(_event, ws) {
+      onOpen(_event, ws) {
         c.set("streamSid", null);
-        c.set("callSid", null);
 
-        phonic = await setupPhonic(ws, c, {
+        phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
           welcome_message:
             "Hello! This is your AI assistant calling. How are you doing today?",
-          voice_id: "meredith",
+          voice_id: "greta",
           output_format: "mulaw_8000",
         });
-        phonic.setExternalId(c.get("callSid"));
-
-        isPhonicReady = true;
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -123,11 +113,11 @@ app.get(
 
           if (messageObj.event === "start") {
             c.set("streamSid", messageObj.streamSid);
-            c.set("callSid", messageObj.start.callSid);
+
+            phonic.setExternalId(messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
-            isPhonicReady &&
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
