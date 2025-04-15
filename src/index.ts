@@ -33,8 +33,8 @@ app.get(
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          welcome_message: "Hello! Meredith from Mera here. How can I help you today?",
-          voice_id: "meredith",
+          welcome_message: "Hello! Greta from Mera here. How can I help you today?",
+          voice_id: "greta",
           system_prompt: getSystemPrompt(),
           output_format: "mulaw_8000",
         });
@@ -97,8 +97,8 @@ app.get(
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          welcome_message: "Hello! This is Meredith from Mera. How can I help you today?",
-          voice_id: "meredith",
+          welcome_message: "Hello! This is Greta from Mera. How can I help you today?",
+          voice_id: "greta",
           system_prompt: getSystemPrompt(),
           output_format: "mulaw_8000",
         });
