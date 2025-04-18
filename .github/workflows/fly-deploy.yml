@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     name: Deploy app
@@ -16,7 +15,4 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
         env:
-          # To generate FLY_API_TOKEN, navigate to Tokens in Fly.io dashboard.
-          # Then, open the repo on Github, click Settings -> Secrets and variables -> Actions,
-          # and add FLY_API_TOKEN as a repository secret.
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
