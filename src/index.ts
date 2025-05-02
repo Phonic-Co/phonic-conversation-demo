@@ -1,9 +1,11 @@
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
+import { Webhook } from "svix";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
+import { phonicWebhookSecret } from "./webhook-env-vars";
 
 const app = new Hono();
 
@@ -135,6 +137,32 @@ app.get(
     };
   }),
 );
+
+app.post("/webhooks/phonic", async (c) => {
+  const rawBody = await c.req.text();
+
+  if (!phonicWebhookSecret) {
+    return c.text("Bad Request", 400);
+  }
+
+  const wh = new Webhook(phonicWebhookSecret);
+
+  try {
+    const payload = wh.verify(rawBody, {
+      "svix-id": c.req.header("svix-id") ?? "",
+      "svix-timestamp": c.req.header("svix-timestamp") ?? "",
+      "svix-signature": c.req.header("svix-signature") ?? "",
+    });
+
+    console.log(payload);
+
+    return c.text("OK", 200);
+  } catch (error) {
+    console.error("Failed to verify webhook:", error);
+
+    return c.text("Bad Request", 400);
+  }
+});
 
 const port = 3000;
 const server = serve({
