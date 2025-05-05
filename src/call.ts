@@ -17,6 +17,7 @@ async function main() {
       to: userPhoneNumber,
       from: twilioPhoneNumber,
       url: `${ngrokUrl}/outbound`,
+      record: true,
     });
 
     console.log(`Success! Call SID: ${call.sid}`);

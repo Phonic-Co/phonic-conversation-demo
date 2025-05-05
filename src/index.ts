@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
-import { getSystemPrompt } from "./prompt";
+// import { getSystemPrompt } from "./prompt";
 
 const app = new Hono();
 
@@ -31,11 +31,11 @@ app.get(
         c.set("streamSid", null);
 
         phonic = setupPhonic(ws, c, {
-          project: "main",
+          project: "maven",
           input_format: "mulaw_8000",
           welcome_message: "Hello, this is Anna. Thanks for calling the Rockefeller Center. How can I help you today?",
           voice_id: "greta",
-          system_prompt: getSystemPrompt(),
+          system_prompt: "",
           output_format: "mulaw_8000",
         });
       },
@@ -95,11 +95,11 @@ app.get(
         c.set("streamSid", null);
 
         phonic = setupPhonic(ws, c, {
-          project: "main",
+          project: "maven",
           input_format: "mulaw_8000",
           welcome_message: "Hello, this is Anna. Thanks for calling the Rockefeller Center. How can I help you today?",
           voice_id: "greta",
-          system_prompt: getSystemPrompt(),
+          system_prompt: "",
           output_format: "mulaw_8000",
         });
       },
