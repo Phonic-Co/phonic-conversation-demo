@@ -37,6 +37,7 @@ app.get(
           voice_id: "greta",
           system_prompt: "",
           output_format: "mulaw_8000",
+          vad_threshold: 0.5,
         });
       },
       onMessage(event, ws) {
