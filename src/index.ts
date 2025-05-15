@@ -33,7 +33,7 @@ app.get(
         phonic = setupPhonic(ws, c, {
           project: "maven",
           input_format: "mulaw_8000",
-          welcome_message: "Hello, this is Anna. Thanks for calling the Rockefeller Center. How can I help you today?",
+          welcome_message: "Hi, this is Anna. Thanks for calling sea vent. How can I help you today?",
           voice_id: "greta",
           system_prompt: "",
           output_format: "mulaw_8000",

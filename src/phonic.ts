@@ -5,7 +5,7 @@ import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
   baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
-  __downstreamWebSocketUrl: "wss://phonic-co--sts-maven-sts-websocket-app.modal.run/sts",
+  __downstreamWebSocketUrl: "wss://phonic-co--sts-cvent-sts-websocket-app.modal.run/sts",
   headers: {
     "Phonic-Admin-Secret": process.env.PHONIC_ADMIN_SECRET as string,
   }
