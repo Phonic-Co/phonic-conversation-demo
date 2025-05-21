@@ -60,7 +60,7 @@ app.get(
             console.log("[INBOUND-WS] PHONE NUMBER:", phoneNumber);
 
             phonic = setupPhonic(ws, c, {
-              project: "main",
+              project: "maven",
               input_format: "mulaw_8000",
               welcome_message: "Hello, this is Anna. Thanks for calling the Rockefeller Center. How can I help you today?",
               voice_id: "greta",
