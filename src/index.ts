@@ -30,13 +30,16 @@ app.get(
     return {
       onOpen(_event, ws) {
         c.set("streamSid", null);
-
+        
+        const phonicTools = ["end_conversation"];
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
+          system_prompt: `You are a helpful conversational assistant speaking to someone on the phone. You should output text as normal without calling a tool call in most cases. Only call the provided functions when the conversation has fully finished. The functions available for use are: ${phonicTools}.`,
           welcome_message: "Hello, how can I help you today?",
-          voice_id: "greta",
+          voice_id: "grant",
           output_format: "mulaw_8000",
+          tools: phonicTools,
         });
       },
       onMessage(event, ws) {
@@ -51,6 +54,7 @@ app.get(
 
           if (messageObj.event === "start") {
             c.set("streamSid", messageObj.streamSid);
+            c.set("callSid", messageObj.start.callSid);
 
             phonic.setExternalId(messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
@@ -99,7 +103,7 @@ app.get(
           input_format: "mulaw_8000",
           welcome_message:
             "Hello! This is your AI assistant calling. How are you doing today?",
-          voice_id: "greta",
+          voice_id: "grant",
           output_format: "mulaw_8000",
         });
       },
