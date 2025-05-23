@@ -12,9 +12,9 @@ const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
 const welcome_messages = {
   "rockstar": "Hi, this is Emma. Thanks for calling Rockstar. How can I help you today?",
-  "cvent": "Hi, this is Anna. Thanks for calling Sea vent. How can I help you today?",
-  "crmspot": "Hi, this is Emma. Thanks for calling CRM Spot. How can I help you today?",
-  "rockefeller": "Hi, this is Emma. Thanks for calling the Rockefeller Center. How can I help you today?",
+  "cvent": "Hi, this is Amy. Thanks for calling Sea vent. How can I help you today?",
+  "crmspot": "Hi, this is Mia. Thanks for calling CRM Spot. How can I help you today?",
+  "rockefeller": "Hi, this is Anna. Thanks for calling the Rockefeller Center. How can I help you today?",
 }
 
 const recieving_number_to_customer_map = {

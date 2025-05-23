@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for phonic-rockstar-mobile-demo on 2025-05-22T01:40:49Z
+# fly.toml app configuration file generated for phonic-maven on 2025-05-22T23:55:17Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'phonic-rockstar-mobile-demo'
+app = 'phonic-maven'
 primary_region = 'iad'
 
 [build]
