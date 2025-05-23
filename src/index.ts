@@ -31,15 +31,25 @@ app.get(
       onOpen(_event, ws) {
         c.set("streamSid", null);
         
-        const phonicTools = ["end_conversation"];
+        // NOTE: This is our temporary fix while our LLM model is too trigger-happy with
+        // the official end conversation tool call
+        // const phonicTools = ["end_conversation"];
+        // phonic = setupPhonic(ws, c, {
+        //   project: "main",
+        //   input_format: "mulaw_8000",
+        //   system_prompt: `You are a helpful conversational assistant speaking to someone on the phone. You should output text as normal without calling a tool call in most cases. Only call the provided functions when the conversation has fully finished. The functions available for use are: ${phonicTools}.`,
+        //   welcome_message: "Hello, how can I help you today?",
+        //   voice_id: "grant",
+        //   output_format: "mulaw_8000",
+        //   tools: phonicTools,
+        // });
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          system_prompt: `You are a helpful conversational assistant speaking to someone on the phone. You should output text as normal without calling a tool call in most cases. Only call the provided functions when the conversation has fully finished. The functions available for use are: ${phonicTools}.`,
+          system_prompt: "You are a helpful assistant. If you seek to end the call, say ∎ only. Saying ∎ will trigger the end of the conversation.",
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
-          tools: phonicTools,
         });
       },
       onMessage(event, ws) {
