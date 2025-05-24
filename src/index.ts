@@ -11,10 +11,10 @@ const app = new Hono();
 const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
 const welcome_messages = {
-  "rockstar": "Hi, this is Emma. Thanks for calling Rockstar. How can I help you today?",
-  "cvent": "Hi, this is Amy. Thanks for calling Sea vent. How can I help you today?",
-  "crmspot": "Hi, this is Mia. Thanks for calling CRM Spot. How can I help you today?",
-  "rockefeller": "Hi, this is Anna. Thanks for calling the Rockefeller Center. How can I help you today?",
+  "rockstar": "Hi, this is Alex. Thanks for calling Rockstar. How can I help you today?",
+  "cvent": "Hi, this is Casey. Thanks for calling Sea vent. How can I help you today?",
+  "crmspot": "Hi, this is Jordan. Thanks for calling CRM Spot. How can I help you today?",
+  "rockefeller": "Hi, this is Sam. Thanks for calling the Rockefeller Center. How can I help you today?",
 }
 
 const recieving_number_to_customer_map = {
@@ -89,7 +89,7 @@ app.get(
               project: "maven",
               input_format: "mulaw_8000",
               welcome_message: welcome_messages[customer as keyof typeof welcome_messages] || "Welcome to Phonic! How can I help you today?",
-              voice_id: "greta",
+              voice_id: "grant",
               system_prompt: "",
               output_format: "mulaw_8000",
               vad_threshold: 0.5,
@@ -145,7 +145,7 @@ app.get(
           project: "maven",
           input_format: "mulaw_8000",
           welcome_message: "Hello, this is Anna. Thanks for calling the Rockefeller Center. How can I help you today?",
-          voice_id: "greta",
+          voice_id: "grant",
           system_prompt: "",
           output_format: "mulaw_8000",
         });
