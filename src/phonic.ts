@@ -1,17 +1,11 @@
 import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
 import { Phonic, type PhonicSTSConfig } from "phonic";
-import twilio from "twilio";
-import {
-  twilioAccountSid,
-  twilioAuthToken,
-} from "./call-env-vars";
 import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
-  baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
+  baseUrl: phonicApiBaseUrl || "https://api.phonic.co"
 });
-const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
 
 export const setupPhonic = (
   ws: WSContext,
@@ -88,12 +82,16 @@ export const setupPhonic = (
       }
 
       case "assistant_ended_conversation": {
-        twilioClient.calls(c.get("callSid"))
-        .update({ status: "completed" })
-        .then(call => console.log(`Ended call for ${JSON.stringify(call)}`))
-        .catch(err => {
-          console.log('Error ending call:', err);
-        });
+        ws.send(
+          JSON.stringify({
+            event: "mark",
+            streamSid: c.get("streamSid"),
+            mark: {
+              name: "end_conversation_mark",
+            },
+          }),
+        );
+        break;
       }
     }
   });
