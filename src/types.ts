@@ -33,5 +33,5 @@ export type TwilioWebSocketMessage =
       event: "mark";
       mark: {
         name: string;
-      }
+      };
     };

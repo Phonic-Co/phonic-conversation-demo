@@ -4,7 +4,7 @@ import { Phonic, type PhonicSTSConfig } from "phonic";
 import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
-  baseUrl: phonicApiBaseUrl || "https://api.phonic.co"
+  baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
 });
 
 export const setupPhonic = (

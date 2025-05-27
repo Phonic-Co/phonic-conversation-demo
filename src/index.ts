@@ -4,10 +4,7 @@ import { Hono } from "hono";
 import { Webhook } from "svix";
 import twilio from "twilio";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
-import {
-  twilioAccountSid,
-  twilioAuthToken,
-} from "./call-env-vars";
+import { twilioAccountSid, twilioAuthToken } from "./call-env-vars";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
 import { phonicWebhookSecret } from "./webhook-env-vars";
@@ -36,7 +33,7 @@ app.get(
     return {
       onOpen(_event, ws) {
         c.set("streamSid", null);
-        
+
         // NOTE: This is our temporary fix while our LLM model is too trigger-happy with
         // the official end conversation tool call
         // const phonicTools = ["end_conversation"];
@@ -52,7 +49,7 @@ app.get(
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          system_prompt: "You are a helpful assistant. If you seek to end the call, say ∎ only. Saying ∎ will trigger the end of the conversation.",
+          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
@@ -80,13 +77,19 @@ app.get(
             messageObj.media.track === "inbound"
           ) {
             phonic.audioChunk(messageObj.media.payload);
-          } else if (messageObj.event === "mark" && messageObj.mark.name == "end_conversation_mark") {
-            twilioClient.calls(c.get("callSid"))
-            .update({ status: "completed" })
-            .then(call => console.log(`Ended call for ${JSON.stringify(call)}`))
-            .catch(err => {
-              console.log('Error ending call:', err);
-            });
+          } else if (
+            messageObj.event === "mark" &&
+            messageObj.mark.name === "end_conversation_mark"
+          ) {
+            twilioClient
+              .calls(c.get("callSid"))
+              .update({ status: "completed" })
+              .then((call) =>
+                console.log(`Ended call for ${JSON.stringify(call)}`),
+              )
+              .catch((err) => {
+                console.log("Error ending call:", err);
+              });
           }
         } catch (error) {
           console.error("Failed to parse Twilio message:", error);
@@ -124,7 +127,7 @@ app.get(
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          system_prompt: "You are a helpful assistant. If you seek to end the call, say ∎ only. Saying ∎ will trigger the end of the conversation.",
+          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
@@ -152,13 +155,19 @@ app.get(
             messageObj.media.track === "inbound"
           ) {
             phonic.audioChunk(messageObj.media.payload);
-          } else if (messageObj.event === "mark" && messageObj.mark.name == "end_conversation_mark") {
-            twilioClient.calls(c.get("callSid"))
-            .update({ status: "completed" })
-            .then(call => console.log(`Ended call for ${JSON.stringify(call)}`))
-            .catch(err => {
-              console.log('Error ending call:', err);
-            });
+          } else if (
+            messageObj.event === "mark" &&
+            messageObj.mark.name === "end_conversation_mark"
+          ) {
+            twilioClient
+              .calls(c.get("callSid"))
+              .update({ status: "completed" })
+              .then((call) =>
+                console.log(`Ended call for ${JSON.stringify(call)}`),
+              )
+              .catch((err) => {
+                console.log("Error ending call:", err);
+              });
           }
         } catch (error) {
           console.error("Failed to parse Twilio message:", error);
