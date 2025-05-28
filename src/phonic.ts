@@ -80,6 +80,19 @@ export const setupPhonic = (
         console.error("Phonic error:", message.error);
         break;
       }
+
+      case "assistant_ended_conversation": {
+        ws.send(
+          JSON.stringify({
+            event: "mark",
+            streamSid: c.get("streamSid"),
+            mark: {
+              name: "end_conversation_mark",
+            },
+          }),
+        );
+        break;
+      }
     }
   });
 
