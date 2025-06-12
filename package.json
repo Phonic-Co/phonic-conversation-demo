@@ -6,18 +6,19 @@
     "dev": "tsx watch src/index.ts",
     "call": "tsx src/call.ts",
     "check": "biome check --write",
+    "ct": "bun check && bun tsc",
     "ci": "tsc && biome ci",
     "tunnel": "./tunnelto.sh"
   },
   "dependencies": {
-    "@hono/node-server": "1.14.1",
-    "@hono/node-ws": "1.1.4",
+    "@hono/node-server": "1.14.4",
+    "@hono/node-ws": "1.1.7",
     "dotenv": "16.5.0",
-    "hono": "4.7.8",
-    "phonic": "0.18.5",
-    "svix": "^1.64.1",
-    "tsx": "4.19.4",
-    "twilio": "5.5.2"
+    "hono": "4.7.11",
+    "phonic": "0.18.6",
+    "svix": "1.67.0",
+    "tsx": "4.20.1",
+    "twilio": "5.7.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
