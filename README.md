@@ -39,6 +39,9 @@ USER_PHONE_NUMBER="..."    # e.g. +19189395678
 
 # Needed if you'd like to use webhooks
 PHONIC_WEBHOOK_SECRET="your_webhook_signing_secret"  # starts with whsec_
+
+# Used to secure /webhooks/phonic-config
+PHONIC_CONFIG_WEBHOOK_AUTHORIZATION="your_configuration_endpoint_authorization"
 ```
 
 ### 3. Set Up ngrok Tunnel

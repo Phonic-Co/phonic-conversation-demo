@@ -1,13 +1,20 @@
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
+import type {
+  PhonicConfigurationEndpointRequestPayload,
+  PhonicConfigurationEndpointResponsePayload,
+} from "phonic";
 import { Webhook } from "svix";
 import twilio from "twilio";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { twilioAccountSid, twilioAuthToken } from "./call-env-vars";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
-import { phonicWebhookSecret } from "./webhook-env-vars";
+import {
+  phonicConfigWebhookAuthorization,
+  phonicWebhookSecret,
+} from "./webhook-env-vars";
 
 const app = new Hono();
 const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
@@ -183,12 +190,11 @@ app.get(
 );
 
 app.post("/webhooks/phonic", async (c) => {
-  const rawBody = await c.req.text();
-
   if (!phonicWebhookSecret) {
     return c.text("Bad Request", 400);
   }
 
+  const rawBody = await c.req.text();
   const wh = new Webhook(phonicWebhookSecret);
 
   try {
@@ -206,6 +212,21 @@ app.post("/webhooks/phonic", async (c) => {
 
     return c.text("Bad Request", 400);
   }
+});
+
+app.post("/webhooks/phonic-config", async (c) => {
+  if (c.req.header("Authorization") !== phonicConfigWebhookAuthorization) {
+    return c.text("Bad Request", 400);
+  }
+
+  const body =
+    (await c.req.json()) as PhonicConfigurationEndpointRequestPayload;
+  const response: PhonicConfigurationEndpointResponsePayload = {
+    welcome_message: "Hey Misha, how can I help you today?",
+    system_prompt: `${body.agent.system_prompt}\n\nLast time Misha called was on 17th of April 2024.`,
+  };
+
+  return c.json(response);
 });
 
 const port = 3000;
