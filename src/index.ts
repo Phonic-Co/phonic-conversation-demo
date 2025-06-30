@@ -43,7 +43,6 @@ app.get(
 
         // NOTE: This is our temporary fix while our LLM model is too trigger-happy with
         // the official end conversation tool call
-        // const phonicTools = ["end_conversation"];
         // phonic = setupPhonic(ws, c, {
         //   project: "main",
         //   input_format: "mulaw_8000",
@@ -51,7 +50,7 @@ app.get(
         //   welcome_message: "Hello, how can I help you today?",
         //   voice_id: "grant",
         //   output_format: "mulaw_8000",
-        //   tools: phonicTools,
+        //   tools: ["natural_conversation_ending"],
         // });
         phonic = setupPhonic(ws, c, {
           project: "main",
@@ -138,6 +137,7 @@ app.get(
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
+          // tools: ["natural_conversation_ending"],
         });
       },
       onMessage(event, ws) {
@@ -227,6 +227,25 @@ app.post("/webhooks/phonic-config", async (c) => {
   };
 
   return c.json(response);
+});
+
+app.post("/webhooks/phonic-tools/next-appointment", async (c) => {
+  if (c.req.header("Authorization") !== phonicConfigWebhookAuthorization) {
+    return c.text("Bad Request", 400);
+  }
+
+  const body = await c.req.json();
+
+  console.log(body);
+
+  // Do something with the `body` here to construct the response
+
+  return c.json({
+    next_appointment: {
+      date: "2026-04-17",
+      location: "123 Main St, Anytown, USA",
+    },
+  });
 });
 
 const port = 3000;
