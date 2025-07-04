@@ -222,8 +222,15 @@ app.post("/webhooks/phonic-config", async (c) => {
   const body =
     (await c.req.json()) as PhonicConfigurationEndpointRequestPayload;
   const response: PhonicConfigurationEndpointResponsePayload = {
-    welcome_message: "Hey Misha, how can I help you today?",
-    system_prompt: `${body.agent.system_prompt}\n\nLast time Misha called was on 17th of April 2024.`,
+    welcome_message: "Hey {{customer_name}}, how can I help you today?",
+    system_prompt: `
+      ${body.agent.system_prompt}
+      Last time customer called about {{subject}} was on 17th of April 2024.
+    `.trim(),
+    template_variables: {
+      customer_name: "Alice",
+      subject: "tennis",
+    },
   };
 
   return c.json(response);
