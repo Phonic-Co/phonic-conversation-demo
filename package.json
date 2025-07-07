@@ -11,27 +11,17 @@
     "tunnel": "./tunnelto.sh"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@hono/node-server": "1.13.8",
-    "@hono/node-ws": "1.1.0",
-    "@types/node-wav": "^0.0.4",
-    "alawmulaw": "^6.0.0",
-    "dotenv": "16.4.7",
-    "hono": "4.7.4",
-    "node-wav": "^0.0.2",
-    "phonic": "0.13.1",
-    "tsx": "4.19.3",
-    "twilio": "5.5.0"
-=======
     "@hono/node-server": "1.15.0",
     "@hono/node-ws": "1.2.0",
+    "@types/node-wav": "^0.0.4",
+    "alawmulaw": "^6.0.0",
     "dotenv": "16.5.0",
     "hono": "4.8.4",
+    "node-wav": "^0.0.2",
     "phonic": "0.22.0",
     "svix": "1.68.0",
     "tsx": "4.20.3",
     "twilio": "5.7.2"
->>>>>>> main
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
