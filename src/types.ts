@@ -28,4 +28,10 @@ export type TwilioWebSocketMessage =
     }
   | {
       event: "stop";
+    }
+  | {
+      event: "mark";
+      mark: {
+        name: string;
+      };
     };

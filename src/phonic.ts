@@ -7,18 +7,12 @@ const phonic = new Phonic(phonicApiKey, {
   baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
 });
 
-export const setupPhonic = async (
+export const setupPhonic = (
   ws: WSContext,
   c: Context,
   config: PhonicSTSConfig,
 ) => {
-  const { data, error } = await phonic.sts.websocket(config);
-
-  if (error !== null) {
-    throw new Error(error.message);
-  }
-
-  const { phonicWebSocket } = data;
+  const phonicWebSocket = phonic.sts.websocket(config);
 
   let userFinishedSpeakingTimestamp = performance.now();
   let isFirstAudioChunk = true;
@@ -72,8 +66,31 @@ export const setupPhonic = async (
         break;
       }
 
+      case "interrupted_response": {
+        ws.send(
+          JSON.stringify({
+            event: "clear",
+            streamSid: c.get("streamSid"),
+          }),
+        );
+        break;
+      }
+
       case "error": {
         console.error("Phonic error:", message.error);
+        break;
+      }
+
+      case "assistant_ended_conversation": {
+        ws.send(
+          JSON.stringify({
+            event: "mark",
+            streamSid: c.get("streamSid"),
+            mark: {
+              name: "end_conversation_mark",
+            },
+          }),
+        );
         break;
       }
     }
