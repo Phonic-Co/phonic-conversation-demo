@@ -38,6 +38,13 @@ export const setupPhonic = (
         break;
       }
 
+      case "tool_call": {
+        console.log("Tool call function name:", message.tool.name);
+        console.log("Tool call request body:", message.request_body);
+
+        break;
+      }
+
       case "audio_chunk": {
         if (isFirstAudioChunk) {
           console.log(
