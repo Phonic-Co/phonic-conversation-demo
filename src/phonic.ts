@@ -29,11 +29,11 @@ export const setupPhonic = (
       }
 
       case "is_user_speaking": {
-        if (isUserSpeaking && !message.isUserSpeaking) {
+        if (isUserSpeaking && !message.is_user_speaking) {
           userFinishedSpeakingTimestamp = performance.now();
         }
 
-        isUserSpeaking = message.isUserSpeaking;
+        isUserSpeaking = message.is_user_speaking;
 
         break;
       }
