@@ -12,20 +12,28 @@ type ToolCallMessage = Extract<PhonicSTSWebSocketResponseMessage, { type: "tool_
 const handleToolCallOutput = (phonicWebSocket: PhonicSTSWebSocket, message: ToolCallMessage) => {
   const toolCallId = message.tool_call_id;
   const toolName = message.tool_name;
-  const name = message.parameters.name;
 
-  if (toolName !== "get_user_interests") {
-    console.log(`Returning output for tool call ${toolCallId}: {error: true, message: "Tool not found"}`);
+  if (toolName === "add_new_user_interests") {
     phonicWebSocket.sendToolCallOutput({
       toolCallId,
-      output: {
-        error: true,
-        message: "Tool not found",
-      }
+      output: `Interests successfully added ${message.parameters.interests}`,
     });
+  } else if (toolName !== "get_user_travel_interests") {
+    console.log(`Returning output for tool call ${toolCallId}: {error: true, message: "Tool not found"}`);
+    setTimeout(() => {
+      phonicWebSocket.sendToolCallOutput({
+        toolCallId,
+        output: {
+          error: true,
+          message: "Tool not found",
+        }
+      });
+    }, 3000);
 
     return;
   }
+
+  const name = message.parameters.name;
 
   const randomInterests = [
     "skydiving, origami, and competitive duck herding",
@@ -49,7 +57,7 @@ const handleToolCallOutput = (phonicWebSocket: PhonicSTSWebSocket, message: Tool
       toolCallId,
       output: `${name}'s interests are: ${interests}`,
     });
-  }, 3000); // Simulate Takes 3 seconds to run
+  }, 2000); // Simulate Takes 2 seconds to run, change to test timeouts
 };
 
 export const setupPhonic = (
