@@ -1,15 +1,26 @@
 import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
-import { Phonic, type PhonicSTSWebSocketResponseMessage, type PhonicSTSWebSocket, type PhonicSTSConfig } from "phonic";
+import {
+  Phonic,
+  type PhonicSTSConfig,
+  type PhonicSTSWebSocket,
+  type PhonicSTSWebSocketResponseMessage,
+} from "phonic";
 import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
   baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
 });
 
-type ToolCallMessage = Extract<PhonicSTSWebSocketResponseMessage, { type: "tool_call" }>;
+type ToolCallMessage = Extract<
+  PhonicSTSWebSocketResponseMessage,
+  { type: "tool_call" }
+>;
 
-const handleToolCallOutput = (phonicWebSocket: PhonicSTSWebSocket, message: ToolCallMessage) => {
+const handleToolCallOutput = (
+  phonicWebSocket: PhonicSTSWebSocket,
+  message: ToolCallMessage,
+) => {
   const toolCallId = message.tool_call_id;
   const toolName = message.tool_name;
 
@@ -19,14 +30,16 @@ const handleToolCallOutput = (phonicWebSocket: PhonicSTSWebSocket, message: Tool
       output: `Interests successfully added ${message.parameters.interests}`,
     });
   } else if (toolName !== "get_user_travel_interests") {
-    console.log(`Returning output for tool call ${toolCallId}: {error: true, message: "Tool not found"}`);
+    console.log(
+      `Returning output for tool call ${toolCallId}: {error: true, message: "Tool not found"}`,
+    );
     setTimeout(() => {
       phonicWebSocket.sendToolCallOutput({
         toolCallId,
         output: {
           error: true,
           message: "Tool not found",
-        }
+        },
       });
     }, 3000);
 
@@ -45,14 +58,16 @@ const handleToolCallOutput = (phonicWebSocket: PhonicSTSWebSocket, message: Tool
     "ice sculpting, medieval reenactment, and pancake art",
     "drone racing, soap carving, and synchronized swimming",
     "giant pumpkin growing, marble racing, and sand art",
-    "speedcubing, kite fighting, and historical fencing"
+    "speedcubing, kite fighting, and historical fencing",
   ];
 
   const interests =
     randomInterests[Math.floor(Math.random() * randomInterests.length)];
 
   setTimeout(() => {
-    console.log(`Returning output for tool call ${toolCallId}: ${name}'s interests are: ${interests}`);
+    console.log(
+      `Returning output for tool call ${toolCallId}: ${name}'s interests are: ${interests}`,
+    );
     phonicWebSocket.sendToolCallOutput({
       toolCallId,
       output: `${name}'s interests are: ${interests}`,
@@ -70,8 +85,6 @@ export const setupPhonic = (
   let userFinishedSpeakingTimestamp = performance.now();
   let isFirstAudioChunk = true;
   let isUserSpeaking = false;
-
-  
 
   phonicWebSocket.onMessage((message) => {
     switch (message.type) {
@@ -99,8 +112,7 @@ export const setupPhonic = (
         break;
       }
 
-
-      case "tool_call_completed": {
+      case "tool_call_processed_by_phonic": {
         console.log("Tool call function name:", message.tool.name);
         console.log("Tool call request body:", message.request_body);
 
