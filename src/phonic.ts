@@ -41,7 +41,7 @@ const handleToolCallOutput = (
           message: "Tool not found",
         },
       });
-    }, 3000);
+    }, 1000);
 
     return;
   }
@@ -72,7 +72,7 @@ const handleToolCallOutput = (
       toolCallId,
       output: `${name}'s interests are: ${interests}`,
     });
-  }, 2000); // Simulate Takes 2 seconds to run, change to test timeouts
+  }, 70000); // Simulate Takes 2 seconds to run, change to test timeouts
 };
 
 export const setupPhonic = (
@@ -112,7 +112,7 @@ export const setupPhonic = (
         break;
       }
 
-      case "tool_call_processed_by_phonic": {
+      case "tool_call_output_processed": {
         console.log("Tool call function name:", message.tool.name);
         console.log("Tool call request body:", message.request_body);
 

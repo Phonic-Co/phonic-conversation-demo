@@ -15,7 +15,7 @@
     "@hono/node-ws": "1.2.0",
     "dotenv": "16.5.0",
     "hono": "4.8.4",
-    "phonic": "0.24.1",
+    "phonic": "/home/qiongzhouhuang/phonic-workplace/phonic-node",
     "svix": "1.68.0",
     "tsx": "4.20.3",
     "twilio": "5.7.2"
