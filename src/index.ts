@@ -8,6 +8,7 @@ import type {
 import { Webhook } from "svix";
 import twilio from "twilio";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
+import { initializePhonicSetup } from "./agents";
 import { twilioAccountSid, twilioAuthToken } from "./call-env-vars";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
@@ -41,23 +42,10 @@ app.get(
       onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        // NOTE: This is our temporary fix while our LLM model is too trigger-happy with
-        // the official end conversation tool call
-        // phonic = setupPhonic(ws, c, {
-        //   project: "main",
-        //   input_format: "mulaw_8000",
-        //   system_prompt: `You are a helpful conversational assistant speaking to someone on the phone. You should output text as normal without calling a tool call in most cases. Only call the provided functions when the conversation has fully finished. The functions available for use are: ${phonicTools}.`,
-        //   welcome_message: "Hello, how can I help you today?",
-        //   voice_id: "grant",
-        //   output_format: "mulaw_8000",
-        //   tools: ["natural_conversation_ending"],
-        // });
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
-          welcome_message: "Hello, how can I help you today?",
-          voice_id: "grant",
+          agent: "grant",
           output_format: "mulaw_8000",
         });
       },
@@ -75,7 +63,7 @@ app.get(
             c.set("streamSid", messageObj.streamSid);
             c.set("callSid", messageObj.start.callSid);
 
-            phonic.setExternalId(messageObj.start.callSid);
+            // phonic.setExternalId(messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
@@ -133,11 +121,8 @@ app.get(
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
-          welcome_message: "Hello, how can I help you today?",
-          voice_id: "grant",
+          agent: "grant",
           output_format: "mulaw_8000",
-          // tools: ["natural_conversation_ending"],
         });
       },
       onMessage(event, ws) {
@@ -154,7 +139,7 @@ app.get(
             c.set("streamSid", messageObj.streamSid);
             c.set("callSid", messageObj.start.callSid);
 
-            phonic.setExternalId(messageObj.start.callSid);
+            // phonic.setExternalId(messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
@@ -255,12 +240,19 @@ app.post("/webhooks/phonic-tools/next-appointment", async (c) => {
   });
 });
 
-const port = 3000;
-const server = serve({
-  fetch: app.fetch,
-  port,
-});
+const port = 3002;
 
-injectWebSocket(server);
+async function startServer() {
+  await initializePhonicSetup();
+  
+  const server = serve({
+    fetch: app.fetch,
+    port,
+  });
 
-console.log(`Listening on port ${port}`);
+  injectWebSocket(server);
+
+  console.log(`Listening on port ${port}`);
+}
+
+startServer().catch(console.error);

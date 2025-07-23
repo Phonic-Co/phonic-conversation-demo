@@ -15,9 +15,9 @@
     "@hono/node-ws": "1.2.0",
     "dotenv": "16.5.0",
     "hono": "4.8.5",
-    "phonic": "0.25.1",
+    "phonic": "file:/Users/moinnadeem/code/phonic-node",
     "svix": "1.69.0",
-    "tsx": "4.20.3",
+    "tsx": "^4.20.3",
     "twilio": "5.7.3"
   },
   "devDependencies": {

@@ -2,10 +2,52 @@ import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
 import { Phonic, type PhonicSTSConfig } from "phonic";
 import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
+import { listFiles, readFile, writeFile } from "./file-tools";
 
+console.log(`Initializing Phonic on base URL in phonic.ts: ${phonicApiBaseUrl} with API key: ${phonicApiKey}`);
 const phonic = new Phonic(phonicApiKey, {
-  baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
+  baseUrl: phonicApiBaseUrl
 });
+
+const toolRegistry = {
+  list_files: async () => {
+    try {
+      const files = listFiles();
+      return { success: true, result: files };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  },
+  read_file: async (parameters: { filename: string }) => {
+    try {
+      const content = readFile(parameters.filename);
+      return { success: true, result: content };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  },
+  write_file: async (parameters: { filename: string; content: string }) => {
+    try {
+      await writeFile(parameters.filename, parameters.content);
+      return { success: true, result: `File '${parameters.filename}' written successfully` };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+};
+
+async function executeTool(toolName: string, parameters: any, phonicWebSocket: any, toolCallId: string) {
+  const tool = toolRegistry[toolName as keyof typeof toolRegistry];
+  if (!tool) {
+    const errorResult = { success: false, error: `Unknown tool: ${toolName}` };
+    phonicWebSocket.sendToolCallOutput({toolCallId, output: errorResult});
+    return errorResult;
+  }
+  
+  const result = await tool(parameters);
+  phonicWebSocket.sendToolCallOutput({toolCallId, output: result});
+  return result;
+}
 
 export const setupPhonic = (
   ws: WSContext,
@@ -39,9 +81,10 @@ export const setupPhonic = (
       }
 
       case "tool_call": {
-        console.log("Tool call function name:", message.tool.name);
-        console.log("Tool call request body:", message.request_body);
-
+        console.log("Tool call function name:", message.tool_name);
+        console.log("Tool call parameters:", message.parameters);
+        const toolCallResult = executeTool(message.tool_name, message.parameters, phonicWebSocket, message.tool_call_id);
+        console.log("Tool call result:", toolCallResult);
         break;
       }
 

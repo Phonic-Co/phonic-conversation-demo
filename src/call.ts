@@ -12,6 +12,7 @@ const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
 async function main() {
   try {
     console.log(`Calling ${userPhoneNumber}`);
+    console.log(`Connecting to Twilio at ${ngrokUrl}`);
 
     const call = await twilioClient.calls.create({
       to: userPhoneNumber,
