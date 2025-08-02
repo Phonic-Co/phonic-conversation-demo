@@ -53,12 +53,15 @@ app.get(
         //   tools: ["natural_conversation_ending"],
         // });
         phonic = setupPhonic(ws, c, {
-          project: "main",
+          agent: "websocket-tools", // Your agent here
           input_format: "mulaw_8000",
-          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
-          welcome_message: "Hello, how can I help you today?",
-          voice_id: "grant",
           output_format: "mulaw_8000",
+          // project: "main",
+          // input_format: "mulaw_8000",
+          // system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
+          // welcome_message: "Hello, how can I help you today?",
+          // voice_id: "grant",
+          // output_format: "mulaw_8000",
         });
       },
       onMessage(event, ws) {
@@ -255,7 +258,7 @@ app.post("/webhooks/phonic-tools/next-appointment", async (c) => {
   });
 });
 
-const port = 3000;
+const port = 6009;
 const server = serve({
   fetch: app.fetch,
   port,

@@ -1,11 +1,79 @@
 import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
-import { Phonic, type PhonicSTSConfig } from "phonic";
+import {
+  Phonic,
+  type PhonicSTSConfig,
+  type PhonicSTSWebSocket,
+  type PhonicSTSWebSocketResponseMessage,
+} from "phonic";
 import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
 const phonic = new Phonic(phonicApiKey, {
   baseUrl: phonicApiBaseUrl || "https://api.phonic.co",
 });
+
+type ToolCallMessage = Extract<
+  PhonicSTSWebSocketResponseMessage,
+  { type: "tool_call" }
+>;
+
+const handleToolCallOutput = (
+  phonicWebSocket: PhonicSTSWebSocket,
+  message: ToolCallMessage,
+) => {
+  const toolCallId = message.tool_call_id;
+  const toolName = message.tool_name;
+
+  if (toolName === "add_new_user_interests") {
+    phonicWebSocket.sendToolCallOutput({
+      toolCallId,
+      output: `Interests successfully added ${message.parameters.interests}`,
+    });
+  } else if (toolName !== "get_user_travel_interests") {
+    console.log(
+      `Returning output for tool call ${toolCallId}: {error: true, message: "Tool not found"}`,
+    );
+    setTimeout(() => {
+      phonicWebSocket.sendToolCallOutput({
+        toolCallId,
+        output: {
+          error: true,
+          message: "Tool not found",
+        },
+      });
+    }, 1000);
+
+    return;
+  }
+
+  const name = message.parameters.name;
+
+  const randomInterests = [
+    "skydiving, origami, and competitive duck herding",
+    "underwater basket weaving, cheese tasting, and yodeling",
+    "extreme ironing, snail racing, and cloud watching",
+    "urban beekeeping, llama grooming, and interpretive dance",
+    "ferret legging, sandcastle architecture, and quantum chess",
+    "competitive rock balancing, mushroom foraging, and silent discoing",
+    "ice sculpting, medieval reenactment, and pancake art",
+    "drone racing, soap carving, and synchronized swimming",
+    "giant pumpkin growing, marble racing, and sand art",
+    "speedcubing, kite fighting, and historical fencing",
+  ];
+
+  const interests =
+    randomInterests[Math.floor(Math.random() * randomInterests.length)];
+
+  setTimeout(() => {
+    console.log(
+      `Returning output for tool call ${toolCallId}: ${name}'s interests are: ${interests}`,
+    );
+    phonicWebSocket.sendToolCallOutput({
+      toolCallId,
+      output: `${name}'s interests are: ${interests}`,
+    });
+  }, 30000); // Simulate Takes 2 seconds to run, change to test timeouts
+};
 
 export const setupPhonic = (
   ws: WSContext,
@@ -28,19 +96,33 @@ export const setupPhonic = (
         break;
       }
 
-      case "is_user_speaking": {
-        if (isUserSpeaking && !message.is_user_speaking) {
+      case "user_started_speaking": {
+        isUserSpeaking = true;
+
+        break;
+      }
+
+      case "user_finished_speaking": {
+        if (isUserSpeaking) {
           userFinishedSpeakingTimestamp = performance.now();
         }
 
-        isUserSpeaking = message.is_user_speaking;
+        isUserSpeaking = false;
+
+        break;
+      }
+
+      case "tool_call_output_processed": {
+        console.log("Tool call function name:", message.tool.name);
+        console.log("Tool call request body:", message.request_body);
 
         break;
       }
 
       case "tool_call": {
-        console.log("Tool call function name:", message.tool.name);
-        console.log("Tool call request body:", message.request_body);
+        console.log("Tool call received:", message);
+
+        handleToolCallOutput(phonicWebSocket, message);
 
         break;
       }
