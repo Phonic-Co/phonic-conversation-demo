@@ -240,7 +240,7 @@ app.post("/webhooks/phonic-tools/next-appointment", async (c) => {
   });
 });
 
-const port = 3002;
+const port = 3000;
 
 async function startServer() {
   await initializePhonicSetup();
