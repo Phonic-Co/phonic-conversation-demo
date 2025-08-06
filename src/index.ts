@@ -35,32 +35,26 @@ app.post("/inbound", (c) => {
 app.get(
   "/inbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: Awaited<ReturnType<typeof setupPhonic>>;
+    let phonic: Awaited<ReturnType<typeof setupPhonic>> | null = null;
 
     return {
       async onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        // NOTE: This is our temporary fix while our LLM model is too trigger-happy with
-        // the official end conversation tool call
-        // phonic = setupPhonic(ws, c, {
-        //   project: "main",
-        //   input_format: "mulaw_8000",
-        //   system_prompt: `You are a helpful conversational assistant speaking to someone on the phone. You should output text as normal without calling a tool call in most cases. Only call the provided functions when the conversation has fully finished. The functions available for use are: ${phonicTools}.`,
-        //   welcome_message: "Hello, how can I help you today?",
-        //   voice_id: "grant",
-        //   output_format: "mulaw_8000",
-        //   tools: ["natural_conversation_ending"],
-        // });
-        phonic = await setupPhonic(ws, c, {
-          project: "main",
-          input_format: "mulaw_8000",
-          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
-          welcome_message: "Hello, how can I help you today?",
-          voice_id: "grant",
-          output_format: "mulaw_8000",
-          type: "config",
-        });
+        try {
+          phonic = await setupPhonic(ws, c, {
+            project: "main",
+            input_format: "mulaw_8000",
+            system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
+            welcome_message: "Hello, how can I help you today?",
+            voice_id: "grant",
+            output_format: "mulaw_8000",
+            type: "config",
+          });
+        } catch (error) {
+          console.error("Failed to setup Phonic:", error);
+          ws.close();
+        }
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -76,14 +70,18 @@ app.get(
             c.set("streamSid", messageObj.streamSid);
             c.set("callSid", messageObj.start.callSid);
 
-            phonic.setExternalId(messageObj.start.callSid);
+            if (phonic) {
+              phonic.setExternalId(messageObj.start.callSid);
+            }
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            phonic.audioChunk(messageObj.media.payload);
+            if (phonic) {
+              phonic.audioChunk(messageObj.media.payload);
+            }
           } else if (
             messageObj.event === "mark" &&
             messageObj.mark.name === "end_conversation_mark"
@@ -105,7 +103,9 @@ app.get(
       onClose() {
         console.log("\n\nTwilio call finished");
 
-        phonic.close();
+        if (phonic) {
+          phonic.close();
+        }
       },
     };
   }),
@@ -125,21 +125,26 @@ app.post("/outbound", (c) => {
 app.get(
   "/outbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: Awaited<ReturnType<typeof setupPhonic>>;
+    let phonic: Awaited<ReturnType<typeof setupPhonic>> | null = null;
 
     return {
       async onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        phonic = await setupPhonic(ws, c, {
-          project: "main",
-          input_format: "mulaw_8000",
-          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
-          welcome_message: "Hello, how can I help you today?",
-          voice_id: "grant",
-          output_format: "mulaw_8000",
-          type: "config",
-        });
+        try {
+          phonic = await setupPhonic(ws, c, {
+            project: "main",
+            input_format: "mulaw_8000",
+            system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
+            welcome_message: "Hello, how can I help you today?",
+            voice_id: "grant",
+            output_format: "mulaw_8000",
+            type: "config",
+          });
+        } catch (error) {
+          console.error("Failed to setup Phonic:", error);
+          ws.close();
+        }
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -155,14 +160,18 @@ app.get(
             c.set("streamSid", messageObj.streamSid);
             c.set("callSid", messageObj.start.callSid);
 
-            phonic.setExternalId(messageObj.start.callSid);
+            if (phonic) {
+              phonic.setExternalId(messageObj.start.callSid);
+            }
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            phonic.audioChunk(messageObj.media.payload);
+            if (phonic) {
+              phonic.audioChunk(messageObj.media.payload);
+            }
           } else if (
             messageObj.event === "mark" &&
             messageObj.mark.name === "end_conversation_mark"
@@ -184,7 +193,9 @@ app.get(
       onClose() {
         console.log("\n\nTwilio call finished");
 
-        phonic.close();
+        if (phonic) {
+          phonic.close();
+        }
       },
     };
   }),

@@ -1,9 +1,9 @@
 import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
 import { type Phonic, PhonicClient } from "phonic";
-import {phonicApiKey } from "./phonic-env-vars";
+import {phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
-const phonic = new PhonicClient({ token: phonicApiKey });
+const phonic = new PhonicClient({ baseUrl: phonicApiBaseUrl, token: phonicApiKey });
 
 export const setupPhonic = async (
   ws: WSContext,
