@@ -1,20 +1,20 @@
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
-import type {
-  PhonicConfigurationEndpointRequestPayload,
-  PhonicConfigurationEndpointResponsePayload,
-} from "phonic";
-import { Webhook } from "svix";
+// import type {
+//   PhonicConfigurationEndpointRequestPayload,
+//   PhonicConfigurationEndpointResponsePayload,
+// } from "phonic";
+// import { Webhook } from "svix";
 import twilio from "twilio";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { twilioAccountSid, twilioAuthToken } from "./call-env-vars";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
-import {
-  phonicConfigWebhookAuthorization,
-  phonicWebhookSecret,
-} from "./webhook-env-vars";
+// import {
+//   phonicConfigWebhookAuthorization,
+//   phonicWebhookSecret,
+// } from "./webhook-env-vars";
 
 const app = new Hono();
 const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
@@ -35,10 +35,10 @@ app.post("/inbound", (c) => {
 app.get(
   "/inbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: ReturnType<typeof setupPhonic>;
+    let phonic: Awaited<ReturnType<typeof setupPhonic>>;
 
     return {
-      onOpen(_event, ws) {
+      async onOpen(_event, ws) {
         c.set("streamSid", null);
 
         // NOTE: This is our temporary fix while our LLM model is too trigger-happy with
@@ -52,13 +52,14 @@ app.get(
         //   output_format: "mulaw_8000",
         //   tools: ["natural_conversation_ending"],
         // });
-        phonic = setupPhonic(ws, c, {
+        phonic = await setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
           system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
+          type: "config",
         });
       },
       onMessage(event, ws) {
@@ -124,20 +125,20 @@ app.post("/outbound", (c) => {
 app.get(
   "/outbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: ReturnType<typeof setupPhonic>;
+    let phonic: Awaited<ReturnType<typeof setupPhonic>>;
 
     return {
-      onOpen(_event, ws) {
+      async onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        phonic = setupPhonic(ws, c, {
+        phonic = await setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
           system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
-          // tools: ["natural_conversation_ending"],
+          type: "config",
         });
       },
       onMessage(event, ws) {
@@ -189,73 +190,73 @@ app.get(
   }),
 );
 
-app.post("/webhooks/phonic", async (c) => {
-  if (!phonicWebhookSecret) {
-    return c.text("Bad Request", 400);
-  }
+// app.post("/webhooks/phonic", async (c) => {
+//   if (!phonicWebhookSecret) {
+//     return c.text("Bad Request", 400);
+//   }
 
-  const rawBody = await c.req.text();
-  const wh = new Webhook(phonicWebhookSecret);
+//   const rawBody = await c.req.text();
+//   const wh = new Webhook(phonicWebhookSecret);
 
-  try {
-    const payload = wh.verify(rawBody, {
-      "svix-id": c.req.header("svix-id") ?? "",
-      "svix-timestamp": c.req.header("svix-timestamp") ?? "",
-      "svix-signature": c.req.header("svix-signature") ?? "",
-    });
+//   try {
+//     const payload = wh.verify(rawBody, {
+//       "svix-id": c.req.header("svix-id") ?? "",
+//       "svix-timestamp": c.req.header("svix-timestamp") ?? "",
+//       "svix-signature": c.req.header("svix-signature") ?? "",
+//     });
 
-    console.log(payload);
+//     console.log(payload);
 
-    return c.text("OK", 200);
-  } catch (error) {
-    console.error("Failed to verify webhook:", error);
+//     return c.text("OK", 200);
+//   } catch (error) {
+//     console.error("Failed to verify webhook:", error);
 
-    return c.text("Bad Request", 400);
-  }
-});
+//     return c.text("Bad Request", 400);
+//   }
+// });
 
-app.post("/webhooks/phonic-config", async (c) => {
-  if (c.req.header("Authorization") !== phonicConfigWebhookAuthorization) {
-    return c.text("Bad Request", 400);
-  }
+// app.post("/webhooks/phonic-config", async (c) => {
+//   if (c.req.header("Authorization") !== phonicConfigWebhookAuthorization) {
+//     return c.text("Bad Request", 400);
+//   }
 
-  const body =
-    (await c.req.json()) as PhonicConfigurationEndpointRequestPayload;
-  const response: PhonicConfigurationEndpointResponsePayload = {
-    welcome_message: "Hey {{customer_name}}, how can I help you today?",
-    system_prompt: `
-      ${body.agent.system_prompt}
-      Last time customer called about {{subject}} was on 17th of April 2024.
-    `.trim(),
-    template_variables: {
-      customer_name: "Alice",
-      subject: "tennis",
-    },
-  };
+//   const body =
+//     (await c.req.json()) as PhonicConfigurationEndpointRequestPayload;
+//   const response: PhonicConfigurationEndpointResponsePayload = {
+//     welcome_message: "Hey {{customer_name}}, how can I help you today?",
+//     system_prompt: `
+//       ${body.agent.system_prompt}
+//       Last time customer called about {{subject}} was on 17th of April 2024.
+//     `.trim(),
+//     template_variables: {
+//       customer_name: "Alice",
+//       subject: "tennis",
+//     },
+//   };
 
-  return c.json(response);
-});
+//   return c.json(response);
+// });
 
-app.post("/webhooks/phonic-tools/next-appointment", async (c) => {
-  if (c.req.header("Authorization") !== phonicConfigWebhookAuthorization) {
-    return c.text("Bad Request", 400);
-  }
+// app.post("/webhooks/phonic-tools/next-appointment", async (c) => {
+//   if (c.req.header("Authorization") !== phonicConfigWebhookAuthorization) {
+//     return c.text("Bad Request", 400);
+//   }
 
-  const body = await c.req.json();
+//   const body = await c.req.json();
 
-  console.log(body);
+//   console.log(body);
 
-  // Do something with the `body` here to construct the response
+//   // Do something with the `body` here to construct the response
 
-  return c.json({
-    next_appointment: {
-      date: "2026-04-17",
-      location: "123 Main St, Anytown, USA",
-    },
-  });
-});
+//   return c.json({
+//     next_appointment: {
+//       date: "2026-04-17",
+//       location: "123 Main St, Anytown, USA",
+//     },
+//   });
+// });
 
-const port = 3000;
+const port = 6009;
 const server = serve({
   fetch: app.fetch,
   port,
