@@ -28,21 +28,29 @@ export const setupPhonic = async (
     switch (message.type) {
       case "input_text": {
         console.log(`\n\nUser: ${message.text}`);
+
         isFirstAudioChunk = true;
+
         break;
       }
+
       case "is_user_speaking": {
         if (isUserSpeaking && !message.is_user_speaking) {
           userFinishedSpeakingTimestamp = performance.now();
         }
+
         isUserSpeaking = message.is_user_speaking;
+
         break;
       }
+
       case "tool_call": {
         console.log("Tool call function name:", message.tool_name);
         console.log("Tool call request body:", message.parameters);
+
         break;
       }
+
       case "audio_chunk": {
         if (isFirstAudioChunk) {
           console.log(
@@ -51,11 +59,14 @@ export const setupPhonic = async (
             "ms",
           );
           process.stdout.write("Assistant: ");
+
           isFirstAudioChunk = false;
         }
+
         if (message.text !== "") {
           process.stdout.write(message.text);
         }
+
         ws.send(
           JSON.stringify({
             event: "media",
@@ -67,6 +78,7 @@ export const setupPhonic = async (
         );
         break;
       }
+
       case "interrupted_response": {
         ws.send(
           JSON.stringify({
@@ -76,10 +88,12 @@ export const setupPhonic = async (
         );
         break;
       }
+
       case "error": {
         console.error("Phonic error:", message.error);
         break;
       }
+
       case "assistant_ended_conversation": {
         ws.send(
           JSON.stringify({
