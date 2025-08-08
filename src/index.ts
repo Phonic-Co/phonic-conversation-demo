@@ -242,7 +242,7 @@ app.post("/webhooks/phonic-tools/next-appointment", async (c) => {
   });
 });
 
-const port = 6009;
+const port = 3000;
 const server = serve({
   fetch: app.fetch,
   port,
