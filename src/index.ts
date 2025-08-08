@@ -1,10 +1,7 @@
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
-import type {
-  PhonicConfigurationEndpointRequestPayload,
-  PhonicConfigurationEndpointResponsePayload,
-} from "phonic";
+import type { Phonic } from "phonic";
 import { Webhook } from "svix";
 import twilio from "twilio";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
@@ -41,24 +38,14 @@ app.get(
       onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        // NOTE: This is our temporary fix while our LLM model is too trigger-happy with
-        // the official end conversation tool call
-        // phonic = setupPhonic(ws, c, {
-        //   project: "main",
-        //   input_format: "mulaw_8000",
-        //   system_prompt: `You are a helpful conversational assistant speaking to someone on the phone. You should output text as normal without calling a tool call in most cases. Only call the provided functions when the conversation has fully finished. The functions available for use are: ${phonicTools}.`,
-        //   welcome_message: "Hello, how can I help you today?",
-        //   voice_id: "grant",
-        //   output_format: "mulaw_8000",
-        //   tools: ["natural_conversation_ending"],
-        // });
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
+          system_prompt: "You are a helpful assistant.",
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
+          type: "config",
         });
       },
       onMessage(event, ws) {
@@ -133,11 +120,11 @@ app.get(
         phonic = setupPhonic(ws, c, {
           project: "main",
           input_format: "mulaw_8000",
-          system_prompt: `You are a helpful assistant. If you seek to end the call, say "It's time to say goodbye ∎". Saying ∎ will trigger the end of the conversation.`,
+          system_prompt: "You are a helpful assistant.",
           welcome_message: "Hello, how can I help you today?",
           voice_id: "grant",
           output_format: "mulaw_8000",
-          // tools: ["natural_conversation_ending"],
+          type: "config",
         });
       },
       onMessage(event, ws) {
@@ -220,8 +207,8 @@ app.post("/webhooks/phonic-config", async (c) => {
   }
 
   const body =
-    (await c.req.json()) as PhonicConfigurationEndpointRequestPayload;
-  const response: PhonicConfigurationEndpointResponsePayload = {
+    (await c.req.json()) as Phonic.PhonicConfigurationEndpointRequestPayload;
+  const response: Phonic.PhonicConfigurationEndpointResponsePayload = {
     welcome_message: "Hey {{customer_name}}, how can I help you today?",
     system_prompt: `
       ${body.agent.system_prompt}
