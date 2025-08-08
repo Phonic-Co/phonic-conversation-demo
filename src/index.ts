@@ -33,26 +33,21 @@ app.post("/inbound", (c) => {
 app.get(
   "/inbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: Awaited<ReturnType<typeof setupPhonic>> | null = null;
+    let phonic: ReturnType<typeof setupPhonic>;
 
     return {
-      async onOpen(_event, ws) {
+      onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        try {
-          phonic = await setupPhonic(ws, c, {
-            project: "main",
-            input_format: "mulaw_8000",
-            system_prompt: "You are a helpful assistant.",
-            welcome_message: "Hello, how can I help you today?",
-            voice_id: "grant",
-            output_format: "mulaw_8000",
-            type: "config",
-          });
-        } catch (error) {
-          console.error("Failed to setup Phonic:", error);
-          ws.close();
-        }
+        phonic = setupPhonic(ws, c, {
+          project: "main",
+          input_format: "mulaw_8000",
+          system_prompt: "You are a helpful assistant.",
+          welcome_message: "Hello, how can I help you today?",
+          voice_id: "grant",
+          output_format: "mulaw_8000",
+          type: "config",
+        });
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -68,18 +63,14 @@ app.get(
             c.set("streamSid", messageObj.streamSid);
             c.set("callSid", messageObj.start.callSid);
 
-            if (phonic) {
-              phonic.setExternalId(messageObj.start.callSid);
-            }
+            phonic.setExternalId(messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            if (phonic) {
-              phonic.audioChunk(messageObj.media.payload);
-            }
+            phonic.audioChunk(messageObj.media.payload);
           } else if (
             messageObj.event === "mark" &&
             messageObj.mark.name === "end_conversation_mark"
@@ -101,9 +92,7 @@ app.get(
       onClose() {
         console.log("\n\nTwilio call finished");
 
-        if (phonic) {
-          phonic.close();
-        }
+        phonic.close();
       },
     };
   }),
@@ -123,26 +112,21 @@ app.post("/outbound", (c) => {
 app.get(
   "/outbound-ws",
   upgradeWebSocket((c) => {
-    let phonic: Awaited<ReturnType<typeof setupPhonic>> | null = null;
+    let phonic: ReturnType<typeof setupPhonic>;
 
     return {
-      async onOpen(_event, ws) {
+      onOpen(_event, ws) {
         c.set("streamSid", null);
 
-        try {
-          phonic = await setupPhonic(ws, c, {
-            project: "main",
-            input_format: "mulaw_8000",
-            system_prompt: "You are a helpful assistant.",
-            welcome_message: "Hello, how can I help you today?",
-            voice_id: "grant",
-            output_format: "mulaw_8000",
-            type: "config",
-          });
-        } catch (error) {
-          console.error("Failed to setup Phonic:", error);
-          ws.close();
-        }
+        phonic = setupPhonic(ws, c, {
+          project: "main",
+          input_format: "mulaw_8000",
+          system_prompt: "You are a helpful assistant.",
+          welcome_message: "Hello, how can I help you today?",
+          voice_id: "grant",
+          output_format: "mulaw_8000",
+          type: "config",
+        });
       },
       onMessage(event, ws) {
         const message = event.data;
@@ -158,18 +142,14 @@ app.get(
             c.set("streamSid", messageObj.streamSid);
             c.set("callSid", messageObj.start.callSid);
 
-            if (phonic) {
-              phonic.setExternalId(messageObj.start.callSid);
-            }
+            phonic.setExternalId(messageObj.start.callSid);
           } else if (messageObj.event === "stop") {
             ws.close();
           } else if (
             messageObj.event === "media" &&
             messageObj.media.track === "inbound"
           ) {
-            if (phonic) {
-              phonic.audioChunk(messageObj.media.payload);
-            }
+            phonic.audioChunk(messageObj.media.payload);
           } else if (
             messageObj.event === "mark" &&
             messageObj.mark.name === "end_conversation_mark"
@@ -191,9 +171,7 @@ app.get(
       onClose() {
         console.log("\n\nTwilio call finished");
 
-        if (phonic) {
-          phonic.close();
-        }
+        phonic.close();
       },
     };
   }),
