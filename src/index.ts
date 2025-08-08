@@ -8,7 +8,6 @@ import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { twilioAccountSid, twilioAuthToken } from "./call-env-vars";
 import { setupPhonic } from "./phonic";
 import type { TwilioWebSocketMessage } from "./types";
-
 import {
   phonicConfigWebhookAuthorization,
   phonicWebhookSecret,
