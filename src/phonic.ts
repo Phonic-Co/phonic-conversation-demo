@@ -1,28 +1,40 @@
 import type { Context } from "hono";
 import type { WSContext } from "hono/ws";
 import { type Phonic, PhonicClient } from "phonic";
-import {phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
+import { phonicApiBaseUrl, phonicApiKey } from "./phonic-env-vars";
 
-const phonic = new PhonicClient({ baseUrl: phonicApiBaseUrl, token: phonicApiKey });
+const phonic = new PhonicClient({
+  baseUrl: phonicApiBaseUrl,
+  token: phonicApiKey,
+});
 
 export const setupPhonic = async (
   ws: WSContext,
   c: Context,
   config: Phonic.ConfigPayload,
 ) => {
-  const phonicWebSocket = await phonic.sts.connect({
-    downstream_websocket_url: "wss://phonic-co--sts-sts-websocket-app.modal.run/sts",
-    Authorization: `Bearer ${phonicApiKey}`,
+  const phonicWebSocket = await phonic.sts.connect();
+
+  const pendingMessages: Array<() => void> = [];
+  let isConnected = false;
+
+  const withBuffer =
+    <T extends unknown[]>(fn: (...args: T) => void) =>
+    (...args: T) => {
+      const action = () => fn(...args);
+      isConnected ? action() : pendingMessages.push(action);
+    };
+
+  phonicWebSocket.on("open", () => {
+    isConnected = true;
+    pendingMessages.splice(0).forEach((action) => action());
   });
 
-  await phonicWebSocket.waitForOpen();
-
-  phonicWebSocket.sendConfig(config);
+  withBuffer(phonicWebSocket.sendConfig.bind(phonicWebSocket))(config);
 
   let userFinishedSpeakingTimestamp = performance.now();
   let isFirstAudioChunk = true;
   let isUserSpeaking = false;
-  let isPhonicSocketOpen = true;
 
   phonicWebSocket.on("message", (message) => {
     switch (message.type) {
@@ -113,35 +125,37 @@ export const setupPhonic = async (
     console.log(
       `Phonic WebSocket closed with code ${event.code} and reason "${event.reason}"`,
     );
-    isPhonicSocketOpen = false;
+    isConnected = false;
   });
 
   phonicWebSocket.on("error", (error) => {
     console.log(`Error from Phonic WebSocket: ${error.message}`);
-    isPhonicSocketOpen = false;
+    isConnected = false;
   });
 
   return {
-    audioChunk: (audio: string) => {
-      if (isPhonicSocketOpen) {
-        try {
-          phonicWebSocket.sendAudioChunk({ type: "audio_chunk", audio });
-        } catch (error) {
-          console.warn("Failed to send audio chunk:", error instanceof Error ? error.message : String(error));
-          isPhonicSocketOpen = false;
-        }
-      }
-    },
-    setExternalId: (externalId: string) => {
-      if (isPhonicSocketOpen) {
-        try {
-          phonicWebSocket.sendSetExternalId({ type: "set_external_id", external_id: externalId });
-        } catch (error) {
-          console.warn("Failed to set external ID:", error instanceof Error ? error.message : String(error));
-          isPhonicSocketOpen = false;
-        }
-      }
-    },
+    audioChunk: withBuffer((audio: string) =>
+      phonicWebSocket.sendAudioChunk({ type: "audio_chunk", audio }),
+    ),
+    setExternalId: withBuffer((externalId: string) =>
+      phonicWebSocket.sendSetExternalId({
+        type: "set_external_id",
+        external_id: externalId,
+      }),
+    ),
+    sendToolCallOutput: withBuffer((toolCallId: string, output: unknown) =>
+      phonicWebSocket.sendToolCallOutput({
+        type: "tool_call_output",
+        tool_call_id: toolCallId,
+        output,
+      }),
+    ),
+    updateSystemPrompt: withBuffer((systemPrompt: string) =>
+      phonicWebSocket.sendUpdateSystemPrompt({
+        type: "update_system_prompt",
+        system_prompt: systemPrompt,
+      }),
+    ),
     close: phonicWebSocket.close,
   };
 };
