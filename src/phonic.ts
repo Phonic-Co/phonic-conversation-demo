@@ -13,33 +13,15 @@ export const setupPhonic = (
   c: Context,
   config: Phonic.ConfigPayload,
 ) => {
-  const pendingMessages: Array<() => void> = [];
-  let isConnected = false;
   let phonicWebSocket: Awaited<ReturnType<typeof phonic.sts.connect>> | null =
     null;
-
-  const withBuffer =
-    <T extends unknown[]>(fn: (...args: T) => void) =>
-    (...args: T) => {
-      const action = () => fn(...args);
-      if (isConnected && phonicWebSocket) {
-        action();
-      } else {
-        pendingMessages.push(action);
-      }
-    };
 
   phonic.sts
     .connect()
     .then((socket) => {
       phonicWebSocket = socket;
 
-      socket.on("open", () => {
-        isConnected = true;
-        pendingMessages.splice(0).forEach((action) => action());
-      });
-
-      withBuffer(socket.sendConfig.bind(socket))(config);
+      socket.sendConfig(config);
 
       socket.on("message", (message) => {
         switch (message.type) {
@@ -130,12 +112,10 @@ export const setupPhonic = (
         console.log(
           `Phonic WebSocket closed with code ${event.code} and reason "${event.reason}"`,
         );
-        isConnected = false;
       });
 
       socket.on("error", (error) => {
         console.log(`Error from Phonic WebSocket: ${error.message}`);
-        isConnected = false;
       });
     })
     .catch((error) => {
@@ -147,28 +127,24 @@ export const setupPhonic = (
   let isUserSpeaking = false;
 
   return {
-    audioChunk: withBuffer((audio: string) =>
+    audioChunk: (audio: string) =>
       phonicWebSocket?.sendAudioChunk({ type: "audio_chunk", audio }),
-    ),
-    setExternalId: withBuffer((externalId: string) =>
+    setExternalId: (externalId: string) =>
       phonicWebSocket?.sendSetExternalId({
         type: "set_external_id",
         external_id: externalId,
       }),
-    ),
-    sendToolCallOutput: withBuffer((toolCallId: string, output: unknown) =>
+    sendToolCallOutput: (toolCallId: string, output: unknown) =>
       phonicWebSocket?.sendToolCallOutput({
         type: "tool_call_output",
         tool_call_id: toolCallId,
         output,
       }),
-    ),
-    updateSystemPrompt: withBuffer((systemPrompt: string) =>
+    updateSystemPrompt: (systemPrompt: string) =>
       phonicWebSocket?.sendUpdateSystemPrompt({
         type: "update_system_prompt",
         system_prompt: systemPrompt,
       }),
-    ),
     close: () => phonicWebSocket?.close(),
   };
 };
